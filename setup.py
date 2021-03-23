@@ -5,5 +5,4 @@ setup(name='magna',
       description='magnetic nanoparticle assembly utilities',
       url='https://github.com/sammysiegel/MAGNA-U',
       author='Sammy Siegel',
-      packages=['MAGNA-U.MAGNA'],
-      zip_safe=True)
+      packages=['MAGNA-U.magna'])
