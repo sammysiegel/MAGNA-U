@@ -26,13 +26,45 @@ the simulation of such assemblies in [Ubermag](https://github.com/ubermag/worksh
 
 ## Instructions
 ### Setup and Dependencies
-To use MAGNA-U, the `magna.py` file should be located inside your
-current working directory (the folder you are running the code from).
 
-If the file is in the right place, you should be able to import it like so:
-```python
-import magna as mu
-```
+There are two ways to install MAGNA-U:
+1. Place the python file in inside your current working directory (the folder you
+   are running the code from). You can find the code on Box at 
+   `/oommf/Sammy/ubermag/MAGNA-U/magna/utils.py`.
+   If the file is in the right place, you should be able to import it like so:
+    ```python
+    import utils as mu
+    ```
+2. To avoid having to transfer files between devices, you can download the MAGNA-U
+    package from Github at [https://github.com/sammysiegel/MAGNA-U](https://github.com/sammysiegel/MAGNA-U). This is easy
+   to do on the command line. Just go to the directory you wish to download to and do:
+   ```bash
+   git init
+   git clone https://github.com/sammysiegel/MAGNA-U
+   ```
+   From there you can access the file. Additionally, it is pretty easy to install
+    the package with pip so you can make it available in your environment without
+   having to worry about whether it is in your directory or not. You just need to
+   find the right path. If you are using an Anaconda environment, that will look
+   something like `/[path_to_anaconda]/envs/[env_name]/lib/python3.8/site-packages`.
+   Once you have downloaded the MAGNA-U repository from Github, do the following:
+   ```bash
+   cd MAGNA-U
+   PYTHONUSERBASE=/[path_to_anaconda]/envs/[env_name]/lib/python3.8/site-packages pip install .
+   ```
+   
+    If this doesn't work you can check what the correct path is by running in Python:
+    ```python
+    import sys
+    print(sys.path)
+    ```
+    This will give you a list of places which will work to put the package.
+   
+   Once it is installed you can import using:
+    ```python
+    import magna.utils as mu
+    ```
+
 MAGNA-U requires an environment with Python 3.8. It also requires Ubermag to be
 installed in your environment. Specifically, the following packages currently
 must be available in your environment in order to work:
@@ -135,14 +167,14 @@ you call a field attribute.
 By using the field attributes of an MNP assembly, it makes it easy to set up a `System`
 object using the `micromagneticmodel` package of Ubermag. An example is shown below:
 ```python
-import magna as mu
+import magna.utils as mu
 import micromagneticmodel as mm
 my_mnp = mu.MNP(id, **kwargs)
 M, A, K, U = my_mnp.maku()
 
 system = mm.System(name='my_system')
 system.m = M
-system.energy = (mm.Demag +
+system.energy = (mm.Demag() +
                  mm.Exchange(A=A) +
                  mm. UniaxialAnisotropy(K=K, u=U))
 ```
@@ -159,7 +191,7 @@ but you can also change where it gets saved to by passing the argument `path` wi
 string with the desired directory. Here's an example:
 
 ```python
-import magna as mu
+import magna.utils as mu
 my_mnp = mu.MNP(0, filepath = './my_directory')
 mu.save_mnp(my_mnp, filepath = './my_other_directory')
 ```
@@ -176,7 +208,7 @@ You can use the `load_mnp()` function to load an mnp from a file. Give the id nu
 of the MNP with the positional `id` argument and the directory of the MNP with the
 keyword argument `path`. The default path is `./MNP_Data'. For example:
 ```python
-import magna as mu
+import magna.utils as mu
 my_mnp = mu.load_mnp(0, filepath = './my_other_directory')
 ```
 
@@ -184,7 +216,7 @@ my_mnp = mu.load_mnp(0, filepath = './my_other_directory')
 If you have an active MNP object, you can view the summary data by using the attribute
 `summary`. For example:
 ```python
-import magna as mu
+import magna.utils as mu
 my_mnp = mu.MNP(0)
 print(my_mnp.summary)
 ```
