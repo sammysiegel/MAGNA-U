@@ -174,7 +174,7 @@ M, A, K, U = my_mnp.maku()
 
 system = mm.System(name='my_system')
 system.m = M
-system.energy = (mm.Demag +
+system.energy = (mm.Demag() +
                  mm.Exchange(A=A) +
                  mm. UniaxialAnisotropy(K=K, u=U))
 ```
