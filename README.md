@@ -33,10 +33,10 @@ There are two ways to install MAGNA-U:
    `/oommf/Sammy/ubermag/MAGNA-U/magna/utils.py`.
    If the file is in the right place, you should be able to import it like so:
     ```python
-    import utils as u
+    import utils as mu
     ```
 2. To avoid having to transfer files between devices, you can download the MAGNA-U
-    package from Github at [https://github.com/sammysiegel/MAGNA-U](https://github.com/sammysiegel/MAGNA-U). This is super easy
+    package from Github at [https://github.com/sammysiegel/MAGNA-U](https://github.com/sammysiegel/MAGNA-U). This is easy
    to do on the command line. Just go to the directory you wish to download to and do:
    ```bash
    git init
@@ -52,9 +52,17 @@ There are two ways to install MAGNA-U:
    cd MAGNA-U
    PYTHONUSERBASE=/[path_to_anaconda]/envs/[env_name]/lib/python3.8/site-packages pip install .
    ```
+   
+    If this doesn't work you can check what the correct path is by running in Python:
+    ```python
+    import sys
+    print(sys.path)
+    ```
+    This will give you a list of places which will work to put the package.
+   
    Once it is installed you can import using:
     ```python
-    import magna.utils as u
+    import magna.utils as mu
     ```
 
 MAGNA-U requires an environment with Python 3.8. It also requires Ubermag to be
