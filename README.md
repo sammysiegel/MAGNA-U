@@ -1,5 +1,5 @@
 # Magnetic Nanoparticle Assembly Utilities (MAGNA-U)
-#### Version 1.0
+#### Version 1.0.1
 MAGNA-U is a Python module that provides tools to simplify the
 modeling and simulation of magnetic nanoparticles (MNPs). MAGNA-U
 combines into one place all the previous code that has been
@@ -387,7 +387,9 @@ usually need to be called by the user:
    
 ### Changelog
 
-- Version 1.0
+- Version 1.0.1 (23 March 2021)
+  - `setup.py` fixes for install on hpc cluster
+- Version 1.0.0 (22 March 2021)
 
 ### References
 [^1]: Y. Ijiri, et. al. Correlated spin canting in ordered core-shell
