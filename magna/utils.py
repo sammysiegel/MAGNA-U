@@ -255,6 +255,14 @@ class MNP(Lattice):
         else:
             self.easy_axes = axes
 
+    @property
+    def scaled_coords(self):
+        scaled = []
+        for n in self.coord_list:
+            i, j, k = n
+            scaled.append((2 * i * self.r_total, 2 * j * self.r_total, 2 * k * self.r_total))
+            return scaled
+
     def make_easy_axes(self):
         possible_axes = [(0, 1, 0), (3 ** .5 / 2, .5, 0), (3 ** .5 / 2, -.5, 0)]
         axes_list = []
@@ -338,6 +346,30 @@ class MNP(Lattice):
 
     def maku(self):
         return self.m_field, self.a_field, self.k_field, self.u_field
+
+    def save_fields(self, filepath='default', M=True, A=True, K=True, U=True):
+        if filepath == 'default':
+            path = self.filepath
+        else:
+            path = filepath
+        if M:
+            self.m_field.write(os.path.join(path, 'm_field_mnp_{}.ovf'.format(self.id)))
+        if A:
+            self.a_field.write(os.path.join(path, 'a_field_mnp_{}.ovf'.format(self.id)))
+        if K:
+            self.k_field.write(os.path.join(path, 'k_field_mnp_{}.ovf'.format(self.id)))
+        if U:
+            self.a_field.write(os.path.join(path, 'u_field_mnp_{}.ovf'.format(self.id)))
+
+    def load_fields(self, files='maku', filepath = 'default'):
+        if filepath == 'default':
+            path = self.filepath
+        else:
+            path = filepath
+        output = []
+        for f in files:
+            output.append(df.Field.fromfile(os.path.join(path, '{}_field_mnp{}.ovf'.format(f, self.id))))
+        return output
 
     @property
     def summary(self):

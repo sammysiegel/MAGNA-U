@@ -130,6 +130,10 @@ determine the shape, size, and packing method of the MNP assembly:
    - *default value:* `3`
 - `n_layers`: The number of lattice layers stacked on top of each other.
    - *default value:* `1`
+- `name`: This can be any string you want. It doesn't currently have any functionality
+  within the code, but you can use it to designate some sort of information about the
+  MNP assembly, for example what it is being used for.
+   - *default value:* `'lattice'`
    
 ### Simulating an MNP Assembly
 #### Accessing Individual `discretisedfield` Attributes:
