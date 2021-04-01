@@ -1,5 +1,5 @@
 # Magnetic Nanoparticle Assembly Utilities (MAGNA-U)
-#### Version 1.0.1
+#### Version 1.1.0
 MAGNA-U is a Python module that provides tools to simplify the
 modeling and simulation of magnetic nanoparticles (MNPs). MAGNA-U
 combines into one place all the previous code that has been
@@ -120,7 +120,7 @@ you want to change their values from the default values:
    
 In addition, you can also pass any arguments accepted by the `Lattice` class, which will
 determine the shape, size, and packing method of the MNP assembly:
- - `shape`: the shape of one layer of MNPs. Current options are `'hexagon'` and `'circle'`.
+ - `shape`: the shape of one layer of MNPs. Current options are `'hexagon'`, `'circle'`, and `'rectangle'`.
     - *default value:* `'hexagon'`
  - `form`: the method of packing/stacking. Current options are `'fcc'` (face-centered cubic),
    `'hcp'` (hexagonal close-packing), `'scp'` (simple close-packing), and `'bcc'` (body-centered cubic).
@@ -254,6 +254,31 @@ Easy Axes List: [(0.8660254037844386, -0.5, 0), (0.8660254037844386, 0.5, 0),
 (0, 1, 0), (0.8660254037844386, -0.5, 0), (0.8660254037844386, -0.5, 0), 
 (0.8660254037844386, -0.5, 0), (0, 1, 0)]
 ```
+
+#### Saving and Loading Fields
+If you want to save the fields associated with an MNP Assembly (m_field, a_field, k_field,
+u_field), you can do this with the `save_fields()` method of the `MNP` class. You can pass
+the argument `filepath` to change the directory the fields get saved to, and you can change
+which fields get saved with the `fields` parameter. `fields` takes a string of letters
+corresponding to the names of fields, such as `maku`. Put in this string the fields that you
+want to save. For example, if you only want to save the m_field and a_field, put `fields = 'ma'`.
+The default is `fields = 'maku'`.
+Here's a full example:
+```python
+import magna.utils as mu
+my_mnp = mu.MNP(5, filepath = './my_directory')
+my_mnp.save_fields(filepath = './my_other_directory', fields='ma')
+```
+You can then load fields of an MNP Assembly by using the `load_fields()` method. It takes the same
+two parameters as `save_fields()`, but it is important that the order in which you put the letters
+in the string `fields` will determine in what order the fields are outputted. The default is 
+`fields = 'maku'`.
+```python
+import magna.utils as mu
+my_mnp = mu.MNP(5, filepath = './my_directory')
+M, A = my_mnp.load_fields(filepath = './my_other_directory', fields='ma')
+```
+
 ## Full Documentation
 #### Lattice Class Attributes
 - `name`: This is currently optional and can be whatever you want. The default is just
@@ -354,7 +379,9 @@ Easy Axes List: [(0.8660254037844386, -0.5, 0), (0.8660254037844386, 0.5, 0),
    
 #### MNP Class Other Attributes
  - `coord_list`: a list of the coordinates of all of the centers of a sphere, generated
-   automatically when a new MNP is instantiated. 
+   automatically when a new MNP is instantiated. The spacing between each center is one unit.
+ - `scaled_coords`: a list of coordinates of all of the centers of spheres, scaled by `r_total`
+   to be phyisically representative of the MNP scale.
  - `summary`: a string of text containing formatted summary information about an MNP  
    
 Tuples are also unpacked and stored as follows:
@@ -366,6 +393,14 @@ Tuples are also unpacked and stored as follows:
 
 #### MNP Class Methods
  - `maku(self)`: returns the `m_field`, `a_field`, `k_field`, and `u_field` in that order.
+ - `save_fields(self,  filepath='default', fields='maku')`: saves all of the fields specified
+    by `fields` to the directory specified by `filepath` (if `default` or unspecified, it is
+    saved to `self.filepath`). `fields` takes a string of letters in any order where `'m'`
+    corresponds to `self.m_field`, `'a'` corresponds to `self.a_field`, `'k'` corresponds to
+    `self.k_field`, and `'u'` corresponds to `self.u_field`.
+ - `load_fields(self, fields='maku', filepath = 'default')`: Loads fields associated with an `MNP`.
+    The `fields` and `filepath` arguments function the same way as for `save_fields()`. Returns
+    the fields as a list in the order they are specified by `fields`.
 
 The other functions in the class are used by other methods/attributes and will not
 usually need to be called by the user:
@@ -391,6 +426,10 @@ usually need to be called by the user:
    
 ### Changelog
 
+- Version 1.1.0 (1 April 2021)
+  - addition of `save_fields()` and `load_fields()` methods for `MNP`
+  - support for making `'rectangle'` shaped MNP assemblies
+  - addition of `scaled_coords` property of `MNP`  
 - Version 1.0.1 (23 March 2021)
   - `setup.py` fixes for install on hpc cluster
 - Version 1.0.0 (22 March 2021)
