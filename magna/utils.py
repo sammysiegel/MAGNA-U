@@ -67,8 +67,8 @@ def hexa_packing_coords(layer_spacing=1 / (3 ** .5 * 2 / 3), layer_radius=0, sha
     coords = []
     if shape == 'rectangle':
         l, w = layer_dims
-        for x in range(-l // 2 + 1, l // 2 + 1):
-            for y in range(-w // 2 + 1, w // 2 + 1):
+        for x in range(0, l):
+            for y in range(0, w):
                 coords.append(((2 * x + (y) % 2) * layer_spacing, (3 ** .5) * (y / 3) * layer_spacing))
     else:
         for x in range(-2 * layer_radius, 2 * layer_radius + 1):
@@ -321,11 +321,18 @@ class MNP(Lattice):
 
     @property
     def mesh(self):
-        return df.Mesh(
-            p1 = (-2 * self.layer_radius * self.r_total, -2 * self.layer_radius * self.r_total, -self.r_total),
-            p2 = (2 * self.layer_radius * self.r_total, 2 * self.layer_radius * self.r_total,
-                  2 * self.n_layers * self.r_total),
-            cell = (self.r_total / self.x_divs, self.r_total / self.y_divs, self.r_total / self.z_divs))
+        if self.shape != 'rectangle':
+            return df.Mesh(
+                p1 = (-2 * self.layer_radius * self.r_total, -2 * self.layer_radius * self.r_total, -self.r_total),
+                p2 = (2 * self.layer_radius * self.r_total, 2 * self.layer_radius * self.r_total,
+                    2 * self.n_layers * self.r_total),
+                cell = (self.r_total / self.x_divs, self.r_total / self.y_divs, self.r_total / self.z_divs))
+        elif self.shape == 'rectangle':
+            return df.Mesh(
+                p1 = (-self.r_total, -self.r_total, -self.r_total),
+                p2 = (4*self.layer_dims[0] * self.r_total, self.layer_dims[1] * self.r_total+self.r_total,
+                    2 * self.n_layers * self.r_total),
+                cell = (self.r_total / self.x_divs, self.r_total / self.y_divs, self.r_total / self.z_divs))
 
     @property
     def m_field(self):
@@ -347,27 +354,27 @@ class MNP(Lattice):
     def maku(self):
         return self.m_field, self.a_field, self.k_field, self.u_field
 
-    def save_fields(self, filepath='default', M=True, A=True, K=True, U=True):
+    def save_fields(self, filepath='default', fields='maku'):
         if filepath == 'default':
             path = self.filepath
         else:
             path = filepath
-        if M:
+        if 'm' in fields:
             self.m_field.write(os.path.join(path, 'm_field_mnp_{}.ovf'.format(self.id)))
-        if A:
+        if 'a' in fields:
             self.a_field.write(os.path.join(path, 'a_field_mnp_{}.ovf'.format(self.id)))
-        if K:
+        if 'k' in fields:
             self.k_field.write(os.path.join(path, 'k_field_mnp_{}.ovf'.format(self.id)))
-        if U:
+        if 'u' in fields:
             self.a_field.write(os.path.join(path, 'u_field_mnp_{}.ovf'.format(self.id)))
 
-    def load_fields(self, files='maku', filepath = 'default'):
+    def load_fields(self, fields='maku', filepath = 'default'):
         if filepath == 'default':
             path = self.filepath
         else:
             path = filepath
         output = []
-        for f in files:
+        for f in fields:
             output.append(df.Field.fromfile(os.path.join(path, '{}_field_mnp{}.ovf'.format(f, self.id))))
         return output
 
