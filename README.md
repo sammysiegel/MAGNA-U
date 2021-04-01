@@ -1,5 +1,5 @@
 # Magnetic Nanoparticle Assembly Utilities (MAGNA-U)
-#### Version 1.1.0
+#### Version 1.1.1
 MAGNA-U is a Python module that provides tools to simplify the
 modeling and simulation of magnetic nanoparticles (MNPs). MAGNA-U
 combines into one place all the previous code that has been
@@ -125,9 +125,14 @@ determine the shape, size, and packing method of the MNP assembly:
  - `form`: the method of packing/stacking. Current options are `'fcc'` (face-centered cubic),
    `'hcp'` (hexagonal close-packing), `'scp'` (simple close-packing), and `'bcc'` (body-centered cubic).
    - *default value:* `'fcc'`
- - `layer_radius`: For circles, this is the radius of the circle in # of spheres. For hexagons,
-   this is the circumradius/side length of the hexagon in # of spheres.
+ - `layer_radius`: Specify this for circle or hexagon shapes.For circles, this is the radius of the 
+   circle in # of spheres. For hexagons, this is the circumradius/side length of the hexagon in # of spheres.
    - *default value:* `3`
+- `layer_dims`: Specify this for rectangular shapes. This is a tuple (x, y) with the dimensions of a
+  layer in # of spheres. Note that because the y spacing is smaller than the x spacing, a `layer_dims`
+  of `(3, 3)` will not be a square. Rather, y should be multiplied by 2*sqrt(3), so the closest
+  dimensions for a square would be `layer_dims = (3, 10)`
+   - *default value:* `(3, 10)`
 - `n_layers`: The number of lattice layers stacked on top of each other.
    - *default value:* `1`
 - `name`: This can be any string you want. It doesn't currently have any functionality
@@ -426,6 +431,9 @@ usually need to be called by the user:
    
 ### Changelog
 
+- Version 1.1.1 (1 April 2021)
+  - Improved documentation for rectangular shapes
+  - Changed default `layer_dims` for `MNP` to `(3,10)`  
 - Version 1.1.0 (1 April 2021)
   - addition of `save_fields()` and `load_fields()` methods for `MNP`
   - support for making `'rectangle'` shaped MNP assemblies

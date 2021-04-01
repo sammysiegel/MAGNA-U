@@ -227,7 +227,7 @@ class MNP(Lattice):
     def __init__(self, id, r_tuple=(3.5e-9, 3.5e-9, 3e-9), discretizations=(7, 7, 7), ms_tuple=(2.4e5, 3.9e5),
                  a_tuple=(5e-12, 9e-12),
                  k_tuple=(2e4, 5.4e4), name='lattice', form='fcc', shape='hexagon',
-                 n_layers=1, layer_radius=3, layer_dims=(0, 0), axes=None, filepath='./MNP_Data'):
+                 n_layers=1, layer_radius=3, layer_dims=(3, 10), axes=None, filepath='./MNP_Data'):
         super().__init__(name = name, form = form, shape = shape, n_layers = n_layers, layer_radius = layer_radius,
                          layer_dims = layer_dims)
         self.coord_list = self.list_coords()
