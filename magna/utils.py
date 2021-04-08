@@ -4,6 +4,8 @@ import random
 from ast import literal_eval as make_list
 import discretisedfield as df
 import os
+import micromagneticmodel as mm
+import oommfc as mc
 
 def num_rings(num):
     n = 1
@@ -227,24 +229,23 @@ class MNP(Lattice):
     def __init__(self, id, r_tuple=(3.5e-9, 3.5e-9, 3e-9), discretizations=(7, 7, 7), ms_tuple=(2.4e5, 3.9e5),
                  a_tuple=(5e-12, 9e-12),
                  k_tuple=(2e4, 5.4e4), name='lattice', form='fcc', shape='hexagon',
-                 n_layers=1, layer_radius=3, layer_dims=(3, 10), axes=None, filepath='./MNP_Data'):
+                 n_layers=1, layer_radius=3, layer_dims=(3, 10), axes=None, directory = os.path.join(os.getcwd(), 'MNP_Data')):
         super().__init__(name = name, form = form, shape = shape, n_layers = n_layers, layer_radius = layer_radius,
                          layer_dims = layer_dims)
         self.coord_list = self.list_coords()
-        self.filepath = filepath
-        if not os.path.isdir(self.filepath):
-            os.makedirs(self.filepath)
-            print('New directory created for MNP Data files: ', self.filepath)
+        self.dirpath = os.path.join(directory, name)
+        if not os.path.isdir(self.dirpath):
+            os.makedirs(self.dirpath)
+            print('New directory created for MNP Data files: ', self.dirpath)
         if id==-1:
-            path, dirs, files = next(os.walk(self.filepath))
-            num_mnps = 0
-            for f in files:
-                if f[-4:] == '.mnp':
-                    num_mnps += 1
-            self.id = num_mnps
+            path, dirs, files = next(os.walk(self.dirpath))
+            self.id = len(dirs)
             print('MNP ID Generated: ', self.id)
         else:
             self.id = id
+        self.filepath = os.path.join(directory, name, 'mnp_{}'.format(self.id))
+        os.makedirs(self.filepath)
+        print('Filepath: ', self.filepath)
         self.r_total, self.r_shell, self.r_core = r_tuple
         self.x_divs, self.y_divs, self.z_divs = discretizations
         self.ms_shell, self.ms_core = ms_tuple
@@ -368,6 +369,13 @@ class MNP(Lattice):
         if 'u' in fields:
             self.a_field.write(os.path.join(path, 'u_field_mnp_{}.ovf'.format(self.id)))
 
+    def save_any_field(self, field, field_name, filepath='default'):
+        if filepath == 'default':
+            path = self.filepath
+        else:
+            path = filepath
+        field.write(os.path.join(path, '{}_mnp_{}.ovf'.format(field_name, self.id)))
+
     def load_fields(self, fields='maku', filepath = 'default'):
         if filepath == 'default':
             path = self.filepath
@@ -377,6 +385,13 @@ class MNP(Lattice):
         for f in fields:
             output.append(df.Field.fromfile(os.path.join(path, '{}_field_mnp{}.ovf'.format(f, self.id))))
         return output
+
+    def load_any_field(self, field_name, filepath='default'):
+        if filepath == 'default':
+            path = self.filepath
+        else:
+            path = filepath
+        return df.Field.fromfile(os.path.join(path, '{}_mnp_{}.ovf'.format(field_name, self.id)))
 
     @property
     def summary(self):
@@ -449,3 +464,41 @@ def load_mnp(id, filepath='./MNP_Data'):
                    form = str(mnp_data[7]),
                    shape = str(mnp_data[8]), n_layers = int(mnp_data[9]), layer_radius = int(mnp_data[10]),
                    axes = make_list(mnp_data[11]))
+
+
+class System(mm.System):
+    def __init__(self, mnp, **kwargs):
+        super(System, self).__init__(name = '{}_{}'.format(mnp.name, mnp.id), **kwargs)
+        self.mnp = mnp
+
+    def initialize(self, m0 = 'random', Demag = True, Exchange = True, UniaxialAnisotropy = True, Zeeman = True, H = (0, 0, .1/mm.consts.mu0)):
+        self.m = self.mnp.m_field
+        self.energy = 0
+        if Demag:
+            self.energy += mm.Demag()
+        if Exchange:
+            self.energy += mm.Exchange(A = self.mnp.a_field)
+        if UniaxialAnisotropy:
+            self.energy += mm.UniaxialAnisotropy(K = self.mnp.k_field, u = self.mnp.u_field)
+        if Zeeman:
+            self.energy += mm.Zeeman(H = H)
+
+
+class MinDriver(mc.MinDriver):
+    def __init__(self, **kwargs):
+        super(MinDriver, self).__init__(**kwargs)
+
+    def drive_mnp(self, mnp, **kwargs):
+        system = System(mnp)
+        system.initialize()
+        self.drive(system, **kwargs)
+        mnp.save_any_field(system.m, field_name = 'm_final', filepath = mnp.filepath)
+
+    def drive_system(self, system, **kwargs):
+        self.drive(system, **kwargs)
+        system.mnp.save_any_field(system.m, field_name = 'm_final', filepath = system.mnp.filepath)
+
+
+def quick_drive(mnp):
+    md = MinDriver()
+    md.drive_mnp(mnp)
