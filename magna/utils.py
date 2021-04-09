@@ -261,7 +261,8 @@ class MNP(Lattice):
             self.id = id
 
         self.filepath = os.path.join(directory, name, 'mnp_{}'.format(self.id))
-        os.makedirs(self.filepath)
+        if not os.path.isdir(self.filepath):
+            os.makedirs(self.filepath)
         print('Filepath: ', self.filepath)
 
         self.r_total, self.r_shell, self.r_core = r_tuple
@@ -282,16 +283,16 @@ class MNP(Lattice):
         self.u_field = None
 
         if 'm' in loaded_fields:
-            self.m_field = self.load_fields(fields = 'm')
+            self.m_field = self.load_fields(fields = 'm')[0]
             self.initialized = True
         if 'a' in loaded_fields:
-            self.a_field = self.load_fields(fields = 'a')
+            self.a_field = self.load_fields(fields = 'a')[0]
             self.initialized = True
         if 'k' in loaded_fields:
-            self.k_field = self.load_fields(fields = 'k')
+            self.k_field = self.load_fields(fields = 'k')[0]
             self.initialized = True
         if 'u' in loaded_fields:
-            self.u_field = self.load_fields(fields = 'u')
+            self.u_field = self.load_fields(fields = 'u')[0]
             self.initialized = True
 
     @property
@@ -398,7 +399,7 @@ class MNP(Lattice):
         self.initialized = True
         if autosave:
             save_mnp(self)
-            self.save_fields()
+            self.save_fields(fields = fields)
 
     def maku(self):
         if not self.initialized:
@@ -433,7 +434,7 @@ class MNP(Lattice):
             path = filepath
         output = []
         for f in fields:
-            output.append(df.Field.fromfile(os.path.join(path, '{}_field_mnp{}.ovf'.format(f, self.id))))
+            output.append(df.Field.fromfile(os.path.join(path, '{}_field_mnp_{}.ovf'.format(f, self.id))))
         return output
 
     def load_any_field(self, field_name, filepath='default'):
@@ -556,7 +557,6 @@ class MinDriver(mc.MinDriver):
 
 
 def quick_drive(mnp):
-    save_mnp(mnp)
     md = MinDriver()
     md.drive_mnp(mnp)
 
