@@ -7,6 +7,7 @@ import os
 import micromagneticmodel as mm
 import oommfc as mc
 import time
+import matplotlib.pyplot as plt
 
 def num_rings(num):
     n = 1
@@ -233,7 +234,7 @@ class MNP(Lattice):
                  ms_tuple=(2.4e5, 3.9e5),
                  a_tuple=(5e-12, 9e-12),
                  k_tuple=(2e4, 5.4e4),
-                 name=time.strftime('%b-%d', time.localtime()),
+                 name=time.strftime('%b_%d', time.localtime()),
                  form='fcc',
                  shape='hexagon',
                  n_layers=1,
@@ -558,3 +559,33 @@ def quick_drive(mnp):
     save_mnp(mnp)
     md = MinDriver()
     md.drive_mnp(mnp)
+
+
+class Plots:
+    def __init__(self, mnp, preload_field=True):
+        self.mnp = mnp
+        self.path = os.path.join(self.mnp.filepath, 'plots')
+        if not os.path.isdir(self.path):
+            os.mkdir(self.path)
+        if preload_field:
+            self.field = self.mnp.load_any_field('m_final')
+
+    def xy_plot(self, **kwargs):
+        fig = plt.figure(figsize = (50, 50))
+        ax = fig.add_subplot(111)
+
+        ax.set_title('MNP {} XY Plot'.format(self.mnp.id))
+        self.field.orientation.plane(z = 0).mpl(ax = ax, figsize = (50, 50),
+                                           scalar_field = self.field.orientation.plane(z = 0).angle,
+                                           vector_color_field = self.field.orientation.z, vector_color = True,
+                                           vector_colorbar = True, scalar_cmap = 'hsv', vector_cmap = 'binary',
+                                           scalar_clim = (0, 6.28),
+                                           filename = os.path.join(self.path, 'angle_plot.pdf'), **kwargs)
+
+    def z_plot(self, **kwargs):
+        fig = plt.figure(figsize = (50, 50))
+        ax = fig.add_subplot(111)
+
+        ax.set_title('MNP {} XY Plot'.format(self.mnp.id))
+        self.field.orientation.plane(z = 0).mpl(ax = ax, figsize = (50, 50),
+                                                filename = os.path.join(self.path, 'angle_plot.pdf'), **kwargs)
