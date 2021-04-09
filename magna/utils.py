@@ -9,6 +9,7 @@ import oommfc as mc
 import time
 import matplotlib.pyplot as plt
 
+
 def num_rings(num):
     n = 1
     while 3 * n * (n - 1) + 1 < num:
@@ -227,6 +228,7 @@ class Lattice:
             all_coords = np.append(all_coords, self.layer_coords(layer, z = True))
         return all_coords.reshape(-1, 3)
 
+
 class MNP(Lattice):
     def __init__(self, id,
                  r_tuple=(3.5e-9, 3.5e-9, 3e-9),
@@ -241,8 +243,8 @@ class MNP(Lattice):
                  layer_radius=3,
                  layer_dims=(3, 10),
                  axes=None,
-                 directory = os.path.join(os.getcwd(), 'MNP_Data'),
-                 loaded_fields = ''):
+                 directory=os.path.join(os.getcwd(), 'MNP_Data'),
+                 loaded_fields=''):
         super().__init__(name = name, form = form, shape = shape, n_layers = n_layers, layer_radius = layer_radius,
                          layer_dims = layer_dims)
 
@@ -253,7 +255,7 @@ class MNP(Lattice):
             os.makedirs(self.dirpath)
             print('New directory created for MNP Data files: ', self.dirpath)
 
-        if id==-1:
+        if id == -1:
             path, dirs, files = next(os.walk(self.dirpath))
             self.id = len(dirs)
             print('MNP ID Generated: ', self.id)
@@ -365,18 +367,23 @@ class MNP(Lattice):
             return df.Mesh(
                 p1 = (-2 * self.layer_radius * self.r_total, -2 * self.layer_radius * self.r_total, -self.r_total),
                 p2 = (2 * self.layer_radius * self.r_total, 2 * self.layer_radius * self.r_total,
-                    2 * self.n_layers * self.r_total),
+                      2 * self.n_layers * self.r_total),
                 cell = (self.r_total / self.x_divs, self.r_total / self.y_divs, self.r_total / self.z_divs))
         elif self.shape == 'rectangle':
             return df.Mesh(
                 p1 = (-self.r_total, -self.r_total, -self.r_total),
-                p2 = (4*self.layer_dims[0] * self.r_total, self.layer_dims[1] * self.r_total+self.r_total,
-                    2 * self.n_layers * self.r_total),
+                p2 = (4 * self.layer_dims[0] * self.r_total, self.layer_dims[1] * self.r_total + self.r_total,
+                      2 * self.n_layers * self.r_total),
                 cell = (self.r_total / self.x_divs, self.r_total / self.y_divs, self.r_total / self.z_divs))
 
-    def make_m_field(self):
-        self.m_field = df.Field(self.mesh, dim = 3, value = lambda point: [2 * random.random() - 1 for _ in range(3)],
-                        norm = self.ms_func)
+    def make_m_field(self, m0 = 'random'):
+        if m0 == 'random':
+            self.m_field = df.Field(self.mesh, dim = 3, value = lambda point: [2 * random.random() - 1 for _ in range(3)],
+                                    norm = self.ms_func)
+        elif type(m0) == type((0,0,0)):
+            self.m_field = df.Field(self.mesh, dim = 3,
+                                    value = m0,
+                                    norm = self.ms_func)
 
     def make_a_field(self):
         self.a_field = df.Field(self.mesh, dim = 1, value = self.a_func)
@@ -387,9 +394,9 @@ class MNP(Lattice):
     def make_u_field(self):
         self.u_field = df.Field(self.mesh, dim = 3, value = self.u_func)
 
-    def initialize(self, fields = 'maku', autosave = True):
+    def initialize(self, fields='maku', autosave=True, m0 = 'random'):
         if 'm' in fields:
-            self.make_m_field()
+            self.make_m_field(m0 = m0)
         if 'a' in fields:
             self.make_a_field()
         if 'k' in fields:
@@ -427,7 +434,7 @@ class MNP(Lattice):
             path = filepath
         field.write(os.path.join(path, '{}_mnp_{}.ovf'.format(field_name, self.id)))
 
-    def load_fields(self, fields='maku', filepath = 'default'):
+    def load_fields(self, fields='maku', filepath='default'):
         if filepath == 'default':
             path = self.filepath
         else:
@@ -499,14 +506,14 @@ def save_mnp(mnp, summary=True, filepath='default'):
     with open(os.path.join(path, 'data_mnp_{}.mnp'.format(mnp.id)), 'w') as f:
         write = csv.writer(f)
         write.writerow(data_list)
-    print('MNP Data Saved: ',os.path.join(path, 'data_mnp_{}.mnp'.format(mnp.id)))
+    print('MNP Data Saved: ', os.path.join(path, 'data_mnp_{}.mnp'.format(mnp.id)))
     if summary:
         with open(os.path.join(path, 'summary_mnp_{}.md'.format(mnp.id)), 'w') as f:
             f.write(mnp.summary)
-        print('MNP Summary Saved: ',os.path.join(path, 'summary_mnp_{}.md'.format(mnp.id)))
+        print('MNP Summary Saved: ', os.path.join(path, 'summary_mnp_{}.md'.format(mnp.id)))
 
 
-def load_mnp(id, name = 'lattice', filepath='./MNP_Data', fields = ''):
+def load_mnp(id, name='lattice', filepath='./MNP_Data', fields=''):
     with open(os.path.join(filepath, name, 'mnp_{}'.format(id), 'data_mnp_{}.mnp'.format(id)), 'r') as f:
         csv_reader = list(csv.reader(f))
         mnp_data = []
@@ -526,9 +533,10 @@ class System(mm.System):
         super(System, self).__init__(name = '{}_{}'.format(mnp.name, mnp.id), **kwargs)
         self.mnp = mnp
 
-    def initialize(self, m0 = 'random', Demag = True, Exchange = True, UniaxialAnisotropy = True, Zeeman = True, H = (0, 0, .1/mm.consts.mu0)):
+    def initialize(self, m0='random', Demag=True, Exchange=True, UniaxialAnisotropy=True, Zeeman=True,
+                   H=(0, 0, .1 / mm.consts.mu0)):
         if not self.mnp.initialized:
-            self.mnp.initialize()
+            self.mnp.initialize(m0 = m0)
         self.m = self.mnp.m_field
         self.energy = 0
         if Demag:
@@ -556,9 +564,9 @@ class MinDriver(mc.MinDriver):
         system.mnp.save_any_field(system.m, field_name = 'm_final', filepath = system.mnp.filepath)
 
 
-def quick_drive(mnp):
+def quick_drive(mnp, **kwargs):
     md = MinDriver()
-    md.drive_mnp(mnp)
+    md.drive_mnp(mnp, **kwargs)
 
 
 class Plots:
@@ -576,11 +584,11 @@ class Plots:
 
         ax.set_title('MNP {} XY Plot'.format(self.mnp.id))
         self.field.orientation.plane(z = 0).mpl(ax = ax, figsize = (50, 50),
-                                           scalar_field = self.field.orientation.plane(z = 0).angle,
-                                           vector_color_field = self.field.orientation.z, vector_color = True,
-                                           vector_colorbar = True, scalar_cmap = 'hsv', vector_cmap = 'binary',
-                                           scalar_clim = (0, 6.28),
-                                           filename = os.path.join(self.path, 'angle_plot.pdf'), **kwargs)
+                                                scalar_field = self.field.orientation.plane(z = 0).angle,
+                                                vector_color_field = self.field.orientation.z, vector_color = True,
+                                                vector_colorbar = True, scalar_cmap = 'hsv', vector_cmap = 'binary',
+                                                scalar_clim = (0, 6.28),
+                                                filename = os.path.join(self.path, 'angle_plot.pdf'), **kwargs)
 
     def z_plot(self, **kwargs):
         fig = plt.figure(figsize = (50, 50))
