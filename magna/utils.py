@@ -376,11 +376,12 @@ class MNP(Lattice):
                       2 * self.n_layers * self.r_total),
                 cell = (self.r_total / self.x_divs, self.r_total / self.y_divs, self.r_total / self.z_divs))
 
-    def make_m_field(self, m0 = 'random'):
+    def make_m_field(self, m0='random'):
         if m0 == 'random':
-            self.m_field = df.Field(self.mesh, dim = 3, value = lambda point: [2 * random.random() - 1 for _ in range(3)],
+            self.m_field = df.Field(self.mesh, dim = 3,
+                                    value = lambda point: [2 * random.random() - 1 for _ in range(3)],
                                     norm = self.ms_func)
-        elif type(m0) == type((0,0,0)):
+        elif type(m0) == type((0, 0, 0)):
             self.m_field = df.Field(self.mesh, dim = 3,
                                     value = m0,
                                     norm = self.ms_func)
@@ -394,7 +395,7 @@ class MNP(Lattice):
     def make_u_field(self):
         self.u_field = df.Field(self.mesh, dim = 3, value = self.u_func)
 
-    def initialize(self, fields='maku', autosave=True, m0 = 'random'):
+    def initialize(self, fields='maku', autosave=True, m0='random'):
         if 'm' in fields:
             self.make_m_field(m0 = m0)
         if 'a' in fields:
@@ -528,9 +529,9 @@ def load_mnp(id, name='lattice', filepath='./MNP_Data', fields=''):
                    axes = make_list(mnp_data[11]), directory = filepath, loaded_fields = fields)
 
 
-class System(mm.System):
+class MNP_System(mm.System):
     def __init__(self, mnp, **kwargs):
-        super(System, self).__init__(name = '{}_{}'.format(mnp.name, mnp.id), **kwargs)
+        super().__init__(name = '{}_{}'.format(mnp.name, mnp.id), **kwargs)
         self.mnp = mnp
 
     def initialize(self, m0='random', Demag=True, Exchange=True, UniaxialAnisotropy=True, Zeeman=True,
@@ -549,12 +550,12 @@ class System(mm.System):
             self.energy += mm.Zeeman(H = H)
 
 
-class MinDriver(mc.MinDriver):
+class MNP_MinDriver(mc.MinDriver):
     def __init__(self, **kwargs):
-        super(MinDriver, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def drive_mnp(self, mnp, **kwargs):
-        system = System(mnp)
+        system = MNP_System(mnp)
         system.initialize()
         self.drive(system, **kwargs)
         mnp.save_any_field(system.m, field_name = 'm_final', filepath = mnp.filepath)
@@ -565,11 +566,11 @@ class MinDriver(mc.MinDriver):
 
 
 def quick_drive(mnp, **kwargs):
-    md = MinDriver()
+    md = MNP_MinDriver()
     md.drive_mnp(mnp, **kwargs)
 
 
-class Plots:
+class MNP_Analyzer:
     def __init__(self, mnp, preload_field=True):
         self.mnp = mnp
         self.path = os.path.join(self.mnp.filepath, 'plots')
@@ -594,6 +595,25 @@ class Plots:
         fig = plt.figure(figsize = (50, 50))
         ax = fig.add_subplot(111)
 
-        ax.set_title('MNP {} XY Plot'.format(self.mnp.id))
+        ax.set_title('MNP {} Z Plot'.format(self.mnp.id))
         self.field.orientation.plane(z = 0).mpl(ax = ax, figsize = (50, 50),
-                                                filename = os.path.join(self.path, 'angle_plot.pdf'), **kwargs)
+                                                filename = os.path.join(self.path, 'z_plot.pdf'), **kwargs)
+
+    def xy_scalar_plot(self, **kwargs):
+        fig = plt.figure(figsize = (40, 10))
+        ax = fig.add_subplot(111)
+
+        ax.set_title('MNP {} XY Plot'.format(self.mnp.id))
+        self.field.orientation.plane(z = 0).angle.mpl_scalar(ax = ax,
+                                                             filename = os.path.join(self.path, 'xy_scalar_plot.pdf'),
+                                                             figsize = (40, 10), filter_field = self.field.x,
+                                                             cmap = 'hsv', clim = (0, 6.28), **kwargs)
+
+    def z_scalar_plot(self, **kwargs):
+        fig = plt.figure(figsize = (40, 10))
+        ax = fig.add_subplot(111)
+
+        ax.set_title('MNP {} Z Plot'.format(self.mnp.id))
+        self.field.orientation.plane(z = 0).z.mpl_scalar(ax = ax,
+                                                         filename = os.path.join(self.path, 'z_scalar_plot.pdf'),
+                                                         figsize = (40, 10), filter_field = self.field.x, **kwargs)
