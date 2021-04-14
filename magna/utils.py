@@ -3,11 +3,16 @@ import csv
 import random
 from ast import literal_eval as make_list
 import discretisedfield as df
+from discretisedfield import util as dfu
 import os
 import micromagneticmodel as mm
 import oommfc as mc
 import time
+import matplotlib
+import matplotlib.cm
+import matplotlib.colors
 import matplotlib.pyplot as plt
+import k3d
 
 
 def num_rings(num):
@@ -303,7 +308,7 @@ class MNP(Lattice):
         for n in self.coord_list:
             i, j, k = n
             scaled.append((2 * i * self.r_total, 2 * j * self.r_total, 2 * k * self.r_total))
-            return scaled
+        return scaled
 
     def make_easy_axes(self):
         possible_axes = [(0, 1, 0), (3 ** .5 / 2, .5, 0), (3 ** .5 / 2, -.5, 0)]
@@ -461,22 +466,23 @@ class MNP(Lattice):
         return ('###             MNP {} Summary                       \n'
                 '|                Property                |  Value   |\n'
                 '| -------------------------------------- | -------- |\n'
-                '| ID                                     | {:<8} |\n'
-                '| R_Total (m)                            | {:<8.2e} |\n'
-                '| R_Shell (m)                            | {:<8.2e} |\n'
-                '| R_Core (m)                             | {:<8.2e} |\n'
+                '| ID                                     | {:<10} |\n'
+                '| R_Total (m)                            | {:<10.2e} |\n'
+                '| R_Shell (m)                            | {:<10.2e} |\n'
+                '| R_Core (m)                             | {:<10.2e} |\n'
                 '| Discretizations per R_total (x, y, z)  | ({},{},{})  |\n'
-                '| Ms_Shell (A/m)                         | {:<8.2e} |\n'
-                '| Ms_Core (A/m)                          | {:<8.2e} |\n'
-                '| A_Shell J/m)                           | {:<8.2e} |\n'
-                '| A_Core (J/m)                           | {:<8.2e} |\n'
-                '| K_Shell (J/m^3)                        | {:<8.2e} |\n'
-                '| K_Core (J/m^3)                         | {:<8.2e} |\n'
-                '| Lattice Name                           | {:<8} |\n'
-                '| Lattice Form                           | {:<8} |\n'
-                '| Lattice Shape                          | {:<8} |\n'
-                '| Number of Lattice Layers               | {:<8} |\n'
-                '| Lattice Layer Radius (# of Spheres)    | {:<8} |\n'
+                '| Ms_Shell (A/m)                         | {:<10.2e} |\n'
+                '| Ms_Core (A/m)                          | {:<10.2e} |\n'
+                '| A_Shell J/m)                           | {:<10.2e} |\n'
+                '| A_Core (J/m)                           | {:<10.2e} |\n'
+                '| K_Shell (J/m^3)                        | {:<10.2e} |\n'
+                '| K_Core (J/m^3)                         | {:<10.2e} |\n'
+                '| Lattice Name                           | {:<10} |\n'
+                '| Lattice Form                           | {:<10} |\n'
+                '| Lattice Shape                          | {:<10} |\n'
+                '| Number of Lattice Layers               | {:<10} |\n'
+                '| Lattice Layer Radius (# of Spheres)    | {:<10} |\n'
+                '| Lattice Layer Dimensions (# of spheres)| {:<10} |\n'
                 '\n'
                 'Easy Axes List: {}'.format(self.id, self.id, self.r_total, self.r_shell, self.r_core,
                                             self.x_divs, self.y_divs, self.z_divs,
@@ -485,7 +491,7 @@ class MNP(Lattice):
                                             self.k_shell, self.k_core,
                                             self.name,
                                             self.form,
-                                            self.shape, self.n_layers, self.layer_radius,
+                                            self.shape, self.n_layers, self.layer_radius, self.layer_dims,
                                             self.easy_axes))
 
 
@@ -503,7 +509,7 @@ def save_mnp(mnp, summary=True, filepath='default'):
                  mnp.form,
                  mnp.shape,
                  mnp.n_layers,
-                 mnp.layer_radius, mnp.easy_axes]
+                 mnp.layer_radius, mnp.easy_axes, mnp.layer_dims]
     with open(os.path.join(path, 'data_mnp_{}.mnp'.format(mnp.id)), 'w') as f:
         write = csv.writer(f)
         write.writerow(data_list)
@@ -526,7 +532,7 @@ def load_mnp(id, name='lattice', filepath='./MNP_Data', fields=''):
                    a_tuple = make_list(mnp_data[4]), k_tuple = make_list(mnp_data[5]), name = str(mnp_data[6]),
                    form = str(mnp_data[7]),
                    shape = str(mnp_data[8]), n_layers = int(mnp_data[9]), layer_radius = int(mnp_data[10]),
-                   axes = make_list(mnp_data[11]), directory = filepath, loaded_fields = fields)
+                   layer_dims = make_list(mnp_data[12]), axes = make_list(mnp_data[11]), directory = filepath, loaded_fields = fields)
 
 
 class MNP_System(mm.System):
@@ -617,3 +623,46 @@ class MNP_Analyzer:
         self.field.orientation.plane(z = 0).z.mpl_scalar(ax = ax,
                                                          filename = os.path.join(self.path, 'z_scalar_plot.pdf'),
                                                          figsize = (40, 10), filter_field = self.field.x, **kwargs)
+
+    def k3d_center_vectors(self, color_field = 'z'):
+        model_matrix = [
+            7.0, 5.0, -5.0, 0.0,
+            0.0, 7.0, 7.0, 5.0,
+            7.0, -5.0, 5.0, 0.0,
+            0.0, 0.0, 0.0, 1.0
+        ]
+        center_magnetization = []
+        for point in self.mnp.scaled_coords:
+            center_magnetization.append(
+                ((self.field.orientation.line(p1 = (point), p2 = (0, 0, 0), n = 2).data.vx[0]),
+                 (self.field.orientation.line(p1 = (point), p2 = (0, 0, 0), n = 2).data.vy[0]),
+                 (self.field.orientation.line(p1 = (point), p2 = (0, 0, 0), n = 2).data.vz[0])))
+
+        if color_field == 'z':
+            cmap = 'viridis'
+            color_values = np.array(center_magnetization)[:, 2]
+        elif color_field =='angle':
+            cmap = 'hsv'
+            color_values = []
+            for point in self.mnp.scaled_coords:
+                color_values.append(self.field.plane(z=0).angle.line(p1 = point, p2=(0,0,0), n=2).data.v[0])
+        else:
+            raise AttributeError("color_field should be either 'z' or 'angle'")
+
+        color_values = dfu.normalise_to_range(color_values, (0, 255))
+        # Generate double pairs (body, head) for colouring vectors.
+        cmap = matplotlib.cm.get_cmap(cmap, 256)
+        cmap_int = []
+        for i in range(cmap.N):
+            rgb = cmap(i)[:3]
+            cmap_int.append(int(matplotlib.colors.rgb2hex(rgb)[1:], 16))
+
+        colors = []
+        for cval in color_values:
+            colors.append(2 * (cmap_int[cval],))
+
+        plot = k3d.plot()
+        plot += k3d.vectors(self.mnp.coord_list, center_magnetization, model_matrix = model_matrix, colors = colors,
+                            line_width = .02, head_size = 2, use_head = True)
+        plot.display()
+
