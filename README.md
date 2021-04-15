@@ -264,8 +264,8 @@ MAGNA-U provides several tools for managing the data pertaining to an MNP assemb
 If you have generated an MNP object within your code, you can save a record of all of
 its basic attributes to a file using the `save_mnp()` function. The function takes as
 a positional argument the name of an instance of an MNP object. By default, the file
-is saved to the same directory as specified by the `filepath` attribute of the MNP,
-but you can also change where it gets saved to by passing the argument `path` with a
+is saved to the same directory as specified by the `directory` attribute of the MNP,
+but you can also change where it gets saved to by passing the argument `filepath` with a
 string with the desired directory. Here's an example:
 
 ```python
@@ -284,8 +284,8 @@ confirmation of the file name and path.
 #### Loading an MNP
 ***NEW*** You can use the `load_mnp()` function to load an mnp from a file. Give the id number
 of the MNP with the positional `id` argument , the name of the MNP with the keyword argument
-`name`, and the and the directory of the MNP with the keyword argument `path`. The default
-path is `./MNP_Data'. For example:
+`name`, and the and the directory of the MNP with the keyword argument `fukepath`. The default
+filepath is `./MNP_Data'. For example:
 ```python
 import magna.utils as mu
 my_mnp = mu.load_mnp(0, name = 'my_name', filepath = './my_other_directory')
@@ -300,7 +300,7 @@ If you have an active MNP object, you can view the summary data by using the att
 `summary`. For example:
 ```python
 import magna.utils as mu
-my_mnp = mu.MNP(0)
+my_mnp = mu.MNP(0, name = 'my_name')
 print(my_mnp.summary)
 ```
 This will provide output that looks something like:
@@ -359,7 +359,7 @@ of an MNP. To start, generate an instance of the class using the MNP you wish to
 ```python
 import magna.utils as mu
 my_mnp = mu.load_mnp(0, name = 'my_name', filepath = './my_directory')
-plotter = MNP_Analyzer(my_mnp)
+plotter = mu.MNP_Analyzer(my_mnp)
 ```
 If you don't specify, the `MNP_Analyzer` will try to load the `m_final` field you have
 written to the MNP's data folder. If you don't wish for this to happen, pass `preload_field = False`.
@@ -449,7 +449,7 @@ will likely take significantly longer than coloring using z.
   the three shapes, and it calls the `gen_coords()` function for hexagons.
   
 #### MNP Class Base Attributes
-- `filepath`: A string with the directory in which data relating to the MNP
+- `directory`: A string with the directory in which data relating to the MNP
    assembly will be stored. If you pass the name of a directory that does not
    already exist, the program will create it for you.
     - *default value*: `'./MNP_Data'`
