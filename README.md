@@ -1,5 +1,8 @@
 # Magnetic Nanoparticle Assembly Utilities (MAGNA-U)
-#### Version 1.1.1
+#### Version 2.0.0
+
+Version 2.0.0 documentation is still a WIP.
+
 MAGNA-U is a Python module that provides tools to simplify the
 modeling and simulation of magnetic nanoparticles (MNPs). MAGNA-U
 combines into one place all the previous code that has been
@@ -14,12 +17,17 @@ Ian Hunt-Isaak, and Yumi Ijiri. The `MNP` class is a subclass of
 nanoparticle core-shell assembly and provides tools to simplify
 the simulation of such assemblies in [Ubermag](https://github.com/ubermag/workshop) [^2] using [OOMMF](https://math.nist.gov/oommf/) [^3].
 
+***NEW*** Unfortunately, due to the new file structuring system in Version 2.0.0,
+files created using an older version will not be compatible with the new
+version using the `load_mnp()` function.
+
 ### Contents: 
 1. **Instructions**
     - Setup and Dependencies
     - Creating an MNP Assembly
     - Simulating an MNP Assembly
     - Saving, Loading, and Managing Data
+    - Plotting Data  
 2. **Full Documentation** 
 3. Changelog
 4. References
@@ -81,12 +89,17 @@ of the class:
 my_mnp = mu.MNP(id, **kwargs)
 ```
 The argument `id` is a required positional argument that should be an integer
-number by which the assembly you create will be referenced. If you give the id
-argument a value of `-1` instead, an id number will be generated for you based on
-how many `.mnp` data files are located in your `filepath` directory, starting with
-0 if there are 0 files. Here are a list of keyword arguments which you can pass if
+number by which the assembly you create will be referenced. 
+***NEW*** If you give the id argument a value of `-1` instead, an id number will be generated for you based on
+how many `mnp_*` directories are located in your `directory/name` directory, starting with
+0 if there are 0. Here are a list of keyword arguments which you can pass if
 you want to change their values from the default values:
- - `filepath`: A string with the directory in which data relating to the MNP
+ - ***New*** `name`: This can be any string you want. The name can be used to describe the
+   usage of the MNP, for example `'varying_a'`, but by default it will just be the
+   date that the mnp is created.
+   - *default value:* `time.strftime('%b_%d', time.localtime())` (The current date in
+     the format like 'Apr-14')
+ - ***NEW*** `directory`: A string with the directory in which data relating to the MNP
    assembly will be stored. If you pass the name of a directory that does not
    already exist, the program will create it for you.
     - *default value*: `'./MNP_Data'`
@@ -117,9 +130,6 @@ you want to change their values from the default values:
    If you omit this argument, a new random set of easy axes will be generated, but
    you can pass a list of axes here if you want to use predefined easy axes.
     - *default value:* `None`
-   
-In addition, you can also pass any arguments accepted by the `Lattice` class, which will
-determine the shape, size, and packing method of the MNP assembly:
  - `shape`: the shape of one layer of MNPs. Current options are `'hexagon'`, `'circle'`, and `'rectangle'`.
     - *default value:* `'hexagon'`
  - `form`: the method of packing/stacking. Current options are `'fcc'` (face-centered cubic),
@@ -135,14 +145,73 @@ determine the shape, size, and packing method of the MNP assembly:
    - *default value:* `(3, 10)`
 - `n_layers`: The number of lattice layers stacked on top of each other.
    - *default value:* `1`
-- `name`: This can be any string you want. It doesn't currently have any functionality
-  within the code, but you can use it to designate some sort of information about the
-  MNP assembly, for example what it is being used for.
-   - *default value:* `'lattice'`
    
 ### Simulating an MNP Assembly
+#### The Easy Way: `quick_drive()`
+***NEW***
+It is very easy to quickly drive an MNP assembly you have created just with the 
+`quick_drive()` function. It's as easy as this:
+
+```python
+import magna.utils as mu
+mnp = mu.MNP(0, name = 'my_name', directory = 'my_MNP_data')
+mu.quick_drive(mnp)
+```
+With that, a system will automatically be created for you, and all of the necessary
+fields will be generated, and the system will be driven with an OOMMF MinDriver.
+The MNP data and all of the fields generated, including the final driven magnetization
+field, will be saved to the 'directory/name/mnp_id' directory for later access.
+
+Note that all of the default `MNP_System` attributes will be used when generating the
+system, meaning that Exchange, Uniaxial Anisotropy, Demag, and a Zeeman field of +0.1 T
+in the +z direction will be included in the energy equation.
+
+#### Creating a Custom System
+***NEW***
+MAGNA-U has a built in class called `MNP_System` that is a subclass of `micromagneticmodel.System`
+which can be used to create a system with customized specifications. The first step is to
+generate a system by doing:
+```python
+import magna.utils as mu
+my_mnp = mu.MNP(0, name = 'my_name', directory = 'my_MNP_data')
+my_system = mu.MNP_System(my_mnp)
+```
+Because `MNP_System` is a subclass of `mm.System`, you can also give
+any arguments that are also accepted by the parent class.
+
+The next step is to initialize the system. You can do this as you would with an `mm.System`
+object, by setting `system.m` and `system.energy`. However, you can do it more easily by
+using the `initialize()` method of `MNP_System`. Here are a list of arguments you can pass
+to the `initialize()` method:
+ - `m0`: this is the initial magnetization of each point in the system. By default, this is
+    random, but you can also pass a 3vector tuple like `(0, 0, 1)` to make the initial
+    magnetization be in a particular direction.
+    - *default value:* `m0 = 'random'`
+ - `Demag`: determines whether the system will include Demag in its energy equation
+     - *default value:* `Demag = True`
+ - `Exchange`: determines whether the system will include Exchange energy   
+     - *default value:* `Exchange = True`
+ - `UniaxialAnisotropy`: determines whether the system will include uniaxial anisotropy energy   
+     - *default value:* `UniaxialAnisotropy = True`
+ - `Zeeman`: determines whether the system will include a Zeeman energy term
+     - *default value:* `Zeeman = True`
+ - `H`: if `Zeeman = True`, this is the 3vector in A/m for the external magnetic field
+    to be applied.
+   - *default value:* `H = (0, 0, .1/mm.consts.mu0)` (0.1 T in the +Z direction)
+    
+#### Driving a Custom System
+***NEW*** In order to drive a custom `MNP_System`, you can you the 'MNP_MinDriver' class:
+```python
+import magna.utils as mu
+my_mnp = mu.MNP(0, name = 'my_name', directory = 'my_MNP_data')
+my_system = mu.MNP_System(my_mnp)
+my_system.initialize(m0 = (0, 0, 1), Zeeman = False)
+md = mu.MNP_MinDriver()
+md.drive_system(my_system)
+```
+
 #### Accessing Individual `discretisedfield` Attributes:
-MAGNA-U makes it easy to access the various fields created by `discretisedfield` in
+***WARNING: Deprecated*** MAGNA-U makes it easy to access the various fields created by `discretisedfield` in
 Ubermag. These are all implemented using the `@property` decorator, meaning you
 can use them like you would use any attribute of the class. WARNING: these objects
 may take a long time to generate depending on the size of your MNP assembly.
@@ -201,7 +270,7 @@ string with the desired directory. Here's an example:
 
 ```python
 import magna.utils as mu
-my_mnp = mu.MNP(0, filepath = './my_directory')
+my_mnp = mu.MNP(0, name = 'my_name', filepath = './my_directory')
 mu.save_mnp(my_mnp, filepath = './my_other_directory')
 ```
 By default, another file is also created which contains a summary of the basic
@@ -213,13 +282,18 @@ The files that get written will have the names `data_mnp_{id#}.mnp` for the data
 confirmation of the file name and path.
 
 #### Loading an MNP
-You can use the `load_mnp()` function to load an mnp from a file. Give the id number
-of the MNP with the positional `id` argument and the directory of the MNP with the
-keyword argument `path`. The default path is `./MNP_Data'. For example:
+***NEW*** You can use the `load_mnp()` function to load an mnp from a file. Give the id number
+of the MNP with the positional `id` argument , the name of the MNP with the keyword argument
+`name`, and the and the directory of the MNP with the keyword argument `path`. The default
+path is `./MNP_Data'. For example:
 ```python
 import magna.utils as mu
-my_mnp = mu.load_mnp(0, filepath = './my_other_directory')
+my_mnp = mu.load_mnp(0, name = 'my_name', filepath = './my_other_directory')
 ```
+Additionally, you can have m, a, k, and/or u fields be preloaded from files by passing the
+`fields` argument with a string containing the fields you want to be loaded. None will be
+loaded by default, but you could might want to pass `fields = 'maku'`, for example. The fields
+that you want to load have to already be saved to that MNP's data folder.
 
 #### Viewing MNP Data in Python
 If you have an active MNP object, you can view the summary data by using the attribute
@@ -232,32 +306,27 @@ print(my_mnp.summary)
 This will provide output that looks something like:
 ```md
 ###             MNP 0 Summary                       
-|                Property                |  Value   |
-| -------------------------------------- | -------- |
-| ID                                     | 0        |
-| R_Total (m)                            | 3.50e-09 |
-| R_Shell (m)                            | 3.50e-09 |
-| R_Core (m)                             | 3.00e-09 |
-| Discretizations per R_total (x, y, z)  | (7,7,7)  |
-| Ms_Shell (A/m)                         | 2.40e+05 |
-| Ms_Core (A/m)                          | 3.90e+05 |
-| A_Shell J/m)                           | 5.00e-12 |
-| A_Core (J/m)                           | 9.00e-12 |
-| K_Shell (J/m^3)                        | 2.00e+04 |
-| K_Core (J/m^3)                         | 5.40e+04 |
-| Lattice Name                           | lattice  |
-| Lattice Form                           | fcc      |
-| Lattice Shape                          | hexagon  |
-| Number of Lattice Layers               | 1        |
-| Lattice Layer Radius (# of Spheres)    | 3        |
+|                Property                |   Value    |
+| -------------------------------------- | ---------- |
+| ID                                     | 0          |
+| R_Total (m)                            | 3.50e-09   |
+| R_Shell (m)                            | 3.50e-09   |
+| R_Core (m)                             | 3.00e-09   |
+| Discretizations per R_total (x, y, z)  | (7,7,7)    |
+| Ms_Shell (A/m)                         | 2.40e+05   |
+| Ms_Core (A/m)                          | 3.90e+05   |
+| A_Shell J/m)                           | 2.50e-12   |
+| A_Core (J/m)                           | 4.50e-12   |
+| K_Shell (J/m^3)                        | 2.00e+04   |
+| K_Core (J/m^3)                         | 5.40e+04   |
+| Lattice Name                           | my_name    |
+| Lattice Form                           | fcc        |
+| Lattice Shape                          | hexagon    |
+| Number of Lattice Layers               | 1          |
+| Lattice Layer Radius (# of Spheres)    | 3          |
+| Lattice Layer Dimensions (# of spheres)| (0 , 0 )   |
 
-Easy Axes List: [(0.8660254037844386, -0.5, 0), (0.8660254037844386, 0.5, 0), 
-(0.8660254037844386, 0.5, 0), (0.8660254037844386, -0.5, 0), 
-(0.8660254037844386, -0.5, 0), (0.8660254037844386, 0.5, 0), 
-(0.8660254037844386, 0.5, 0), (0.8660254037844386, 0.5, 0), (0, 1, 0), 
-(0.8660254037844386, 0.5, 0), (0, 1, 0), (0, 1, 0), (0, 1, 0), (0, 1, 0), 
-(0, 1, 0), (0.8660254037844386, -0.5, 0), (0.8660254037844386, -0.5, 0), 
-(0.8660254037844386, -0.5, 0), (0, 1, 0)]
+Easy Axes List: [(0.8660254037844386, 0.5, 0), ...]
 ```
 
 #### Saving and Loading Fields
@@ -271,7 +340,7 @@ The default is `fields = 'maku'`.
 Here's a full example:
 ```python
 import magna.utils as mu
-my_mnp = mu.MNP(5, filepath = './my_directory')
+my_mnp = mu.MNP(5, name = 'my_name', filepath = './my_directory')
 my_mnp.save_fields(filepath = './my_other_directory', fields='ma')
 ```
 You can then load fields of an MNP Assembly by using the `load_fields()` method. It takes the same
@@ -280,11 +349,54 @@ in the string `fields` will determine in what order the fields are outputted. Th
 `fields = 'maku'`.
 ```python
 import magna.utils as mu
-my_mnp = mu.MNP(5, filepath = './my_directory')
+my_mnp = mu.MNP(5, name = 'my_name', filepath = './my_directory')
 M, A = my_mnp.load_fields(filepath = './my_other_directory', fields='ma')
 ```
 
+### Plotting Data
+***NEW*** You can use the `MNP_Analyzer` class to generate plots to analyze the magnetization data
+of an MNP. To start, generate an instance of the class using the MNP you wish to analyze.
+```python
+import magna.utils as mu
+my_mnp = mu.load_mnp(0, name = 'my_name', filepath = './my_directory')
+plotter = MNP_Analyzer(my_mnp)
+```
+If you don't specify, the `MNP_Analyzer` will try to load the `m_final` field you have
+written to the MNP's data folder. If you don't wish for this to happen, pass `preload_field = False`.
+To use a different field, you should access the `MNP_Analyzer.field` attribute such as:
+```python
+plotter.field = my_specified_field
+```
+Once a field is loaded, you can plot it with a combination vector/scalar plot, a
+scalar only plot, or a 3D plot of the magnetization vectors of the center of each sphere.
+The first two kinds of plots will be automatically saved to your mnp data folder in a
+subdirectory called 'plots'.
+
+#### Vector/Scalar Plot Options:
+ - `MNP_Analyzer.xy_plot()`: A plot with the scalar colors showing the angle of the magnetization
+   vectors projected onto the xy plane, in radians.
+ - `MNP_Analyzer.z_plot()`: A plot with the scalar colors showing the z component of the magnetization
+
+Both of these plots are based on the `df.Field.mpl()` method and can accept any argument that
+it accepts. You can also easily set the title with the `title` argument.
+
+#### Scalar Only Plot Options:
+ - `MNP_Analyzer.xy_scalar_plot()`: A plot with the scalar colors showing the angle of the magnetization
+   vectors projected onto the xy plane, in radians.
+ - `MNP_Analyzer.z_scalar_plot()`: A plot with the scalar colors showing the z component of the magnetization
+
+Both of these plots are based on the `df.Field.mpl_scalar()` method and can accept any argument that
+it accepts. You can also easily set the title with the `title` argument.
+
+#### 3D Vector Plot
+The method `MNP_Analyzer.k3d_center_vectors()` will create a 3D plot of the magnetization
+vectors for the center of each MNP sphere using k3d. You can have the vector field be
+colored by either the z component (default) or the xy angle component by using
+`color_field = 'z'` or `color_field = 'angle'` respectively. Coloring using the xy angles
+will likely take significantly longer than coloring using z.
+
 ## Full Documentation
+***WARNING: Some of this is Deprecated***
 #### Lattice Class Attributes
 - `name`: This is currently optional and can be whatever you want. The default is just
   `'lattice'`.
@@ -431,6 +543,16 @@ usually need to be called by the user:
    
 ### Changelog
 
+- Version 2.0.0 (14 April 2021)
+  - Added new classes (`MNP_System`, `MNP_MinDriver`, `MNP_Analyzer`)
+  - Added `quick_drive()` function
+  - Restructured file system to by name/mnp id, keeping all files in one folder
+  - built in plot options with `MNP_Analyzer`: xy angle, z, xy angle scalar only,
+    z scalar only, k3d sphere center magnetization vector plot
+  - Changed m_field, a_field, k_field, and u_field attributes from being properties
+    that automatically generate a field to needing to be specifically initialized with
+    the new `MNP.initialize()` method. These fields then don't have to be regenerated
+    once this is done.
 - Version 1.1.1 (1 April 2021)
   - Improved documentation for rectangular shapes
   - Changed default `layer_dims` for `MNP` to `(3,10)`  

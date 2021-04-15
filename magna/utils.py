@@ -463,36 +463,37 @@ class MNP(Lattice):
 
     @property
     def summary(self):
-        return ('###             MNP {} Summary                       \n'
-                '|                Property                |  Value   |\n'
-                '| -------------------------------------- | -------- |\n'
-                '| ID                                     | {:<10} |\n'
-                '| R_Total (m)                            | {:<10.2e} |\n'
-                '| R_Shell (m)                            | {:<10.2e} |\n'
-                '| R_Core (m)                             | {:<10.2e} |\n'
-                '| Discretizations per R_total (x, y, z)  | ({},{},{})  |\n'
-                '| Ms_Shell (A/m)                         | {:<10.2e} |\n'
-                '| Ms_Core (A/m)                          | {:<10.2e} |\n'
-                '| A_Shell J/m)                           | {:<10.2e} |\n'
-                '| A_Core (J/m)                           | {:<10.2e} |\n'
-                '| K_Shell (J/m^3)                        | {:<10.2e} |\n'
-                '| K_Core (J/m^3)                         | {:<10.2e} |\n'
-                '| Lattice Name                           | {:<10} |\n'
-                '| Lattice Form                           | {:<10} |\n'
-                '| Lattice Shape                          | {:<10} |\n'
-                '| Number of Lattice Layers               | {:<10} |\n'
-                '| Lattice Layer Radius (# of Spheres)    | {:<10} |\n'
-                '| Lattice Layer Dimensions (# of spheres)| {:<10} |\n'
-                '\n'
-                'Easy Axes List: {}'.format(self.id, self.id, self.r_total, self.r_shell, self.r_core,
-                                            self.x_divs, self.y_divs, self.z_divs,
-                                            self.ms_shell, self.ms_core,
-                                            self.a_shell, self.a_core,
-                                            self.k_shell, self.k_core,
-                                            self.name,
-                                            self.form,
-                                            self.shape, self.n_layers, self.layer_radius, self.layer_dims,
-                                            self.easy_axes))
+        return (('###             MNP {} Summary                       \n'
+                 '|                Property                |   Value    |\n'
+                 '| -------------------------------------- | ---------- |\n'
+                 '| ID                                     | {:<10} |\n'
+                 '| R_Total (m)                            | {:<10.2e} |\n'
+                 '| R_Shell (m)                            | {:<10.2e} |\n'
+                 '| R_Core (m)                             | {:<10.2e} |\n'
+                 '| Discretizations per R_total (x, y, z)  | ({},{},{})    |\n'
+                 '| Ms_Shell (A/m)                         | {:<10.2e} |\n'
+                 '| Ms_Core (A/m)                          | {:<10.2e} |\n'
+                 '| A_Shell J/m)                           | {:<10.2e} |\n'
+                 '| A_Core (J/m)                           | {:<10.2e} |\n'
+                 '| K_Shell (J/m^3)                        | {:<10.2e} |\n'
+                 '| K_Core (J/m^3)                         | {:<10.2e} |\n'
+                 '| Lattice Name                           | {:<10} |\n'
+                 '| Lattice Form                           | {:<10} |\n'
+                 '| Lattice Shape                          | {:<10} |\n'
+                 '| Number of Lattice Layers               | {:<10} |\n'
+                 '| Lattice Layer Radius (# of Spheres)    | {:<10} |\n'
+                 '| Lattice Layer Dimensions (# of spheres)| ({:<2}, {:<2})   |\n'
+                 '\n'
+                 'Easy Axes List: {}').format(self.id, self.id, self.r_total, self.r_shell, self.r_core,
+                                              self.x_divs, self.y_divs, self.z_divs,
+                                              self.ms_shell, self.ms_core,
+                                              self.a_shell, self.a_core,
+                                              self.k_shell, self.k_core,
+                                              self.name,
+                                              self.form,
+                                              self.shape, self.n_layers, self.layer_radius, self.layer_dims[0],
+                                              self.layer_dims[1],
+                                              self.easy_axes))
 
 
 def save_mnp(mnp, summary=True, filepath='default'):
@@ -532,7 +533,8 @@ def load_mnp(id, name='lattice', filepath='./MNP_Data', fields=''):
                    a_tuple = make_list(mnp_data[4]), k_tuple = make_list(mnp_data[5]), name = str(mnp_data[6]),
                    form = str(mnp_data[7]),
                    shape = str(mnp_data[8]), n_layers = int(mnp_data[9]), layer_radius = int(mnp_data[10]),
-                   layer_dims = make_list(mnp_data[12]), axes = make_list(mnp_data[11]), directory = filepath, loaded_fields = fields)
+                   layer_dims = make_list(mnp_data[12]), axes = make_list(mnp_data[11]), directory = filepath,
+                   loaded_fields = fields)
 
 
 class MNP_System(mm.System):
@@ -585,46 +587,73 @@ class MNP_Analyzer:
         if preload_field:
             self.field = self.mnp.load_any_field('m_final')
 
-    def xy_plot(self, **kwargs):
-        fig = plt.figure(figsize = (50, 50))
-        ax = fig.add_subplot(111)
+    def xy_plot(self, ax=None, title=None, z_plane=0, figsize=(50, 50), filename=None,
+                scalar_cmap='hsv', vector_cmap='binary', scalar_clim=(0, 6.28), **kwargs):
+        if filename is None:
+            filename = os.path.join(self.path, 'angle_plot.pdf')
+        if title is None:
+            title = 'MNP {} XY Plot'.format(self.mnp.id)
+        if ax is None:
+            fig = plt.figure(figsize = figsize)
+            ax = fig.add_subplot(111)
 
-        ax.set_title('MNP {} XY Plot'.format(self.mnp.id))
-        self.field.orientation.plane(z = 0).mpl(ax = ax, figsize = (50, 50),
-                                                scalar_field = self.field.orientation.plane(z = 0).angle,
-                                                vector_color_field = self.field.orientation.z, vector_color = True,
-                                                vector_colorbar = True, scalar_cmap = 'hsv', vector_cmap = 'binary',
-                                                scalar_clim = (0, 6.28),
-                                                filename = os.path.join(self.path, 'angle_plot.pdf'), **kwargs)
+            ax.set_title(title)
+        self.field.orientation.plane(z = z_plane).mpl(ax = ax, figsize = figsize,
+                                                      scalar_field = self.field.orientation.plane(z = z_plane).angle,
+                                                      vector_color_field = self.field.orientation.z,
+                                                      vector_color = True,
+                                                      vector_colorbar = True, scalar_cmap = scalar_cmap,
+                                                      vector_cmap = vector_cmap,
+                                                      scalar_clim = scalar_clim,
+                                                      filename = filename, **kwargs)
 
-    def z_plot(self, **kwargs):
-        fig = plt.figure(figsize = (50, 50))
-        ax = fig.add_subplot(111)
+    def z_plot(self, ax=None, title=None, z_plane=0, figsize=(50, 50), filename=None,
+               scalar_cmap='viridis', **kwargs):
+        if filename is None:
+            filename = os.path.join(self.path, 'z_plot.pdf')
+        if title is None:
+            title = 'MNP {} Z Plot'.format(self.mnp.id)
+        if ax is None:
+            fig = plt.figure(figsize = figsize)
+            ax = fig.add_subplot(111)
 
-        ax.set_title('MNP {} Z Plot'.format(self.mnp.id))
-        self.field.orientation.plane(z = 0).mpl(ax = ax, figsize = (50, 50),
-                                                filename = os.path.join(self.path, 'z_plot.pdf'), **kwargs)
+            ax.set_title(title)
+        self.field.orientation.plane(z = z_plane).mpl(ax = ax, figsize = figsize,
+                                                      filename = filename, scalar_cmap = scalar_cmap, **kwargs)
 
-    def xy_scalar_plot(self, **kwargs):
-        fig = plt.figure(figsize = (40, 10))
-        ax = fig.add_subplot(111)
+    def xy_scalar_plot(self, ax=None, title=None, z_plane=0, figsize=(40, 10), filename=None,
+                       cmap='hsv', clim=(0, 6.28), **kwargs):
+        if filename is None:
+            filename = os.path.join(self.path, 'xy_scalar_plot.pdf')
+        if title is None:
+            title = 'MNP {} XY Scalar Plot'.format(self.mnp.id)
+        if ax is None:
+            fig = plt.figure(figsize = figsize)
+            ax = fig.add_subplot(111)
 
-        ax.set_title('MNP {} XY Plot'.format(self.mnp.id))
-        self.field.orientation.plane(z = 0).angle.mpl_scalar(ax = ax,
-                                                             filename = os.path.join(self.path, 'xy_scalar_plot.pdf'),
-                                                             figsize = (40, 10), filter_field = self.field.x,
-                                                             cmap = 'hsv', clim = (0, 6.28), **kwargs)
+            ax.set_title(title)
+        self.field.orientation.plane(z = z_plane).angle.mpl_scalar(ax = ax,
+                                                                   filename = filename,
+                                                                   figsize = figsize, filter_field = self.field.x,
+                                                                   cmap = cmap, clim = clim, **kwargs)
 
-    def z_scalar_plot(self, **kwargs):
-        fig = plt.figure(figsize = (40, 10))
-        ax = fig.add_subplot(111)
+    def z_scalar_plot(self, ax=None, title=None, z_plane=0, figsize=(40, 10), filename=None,
+                      cmap='viridis', **kwargs):
+        if filename is None:
+            filename = os.path.join(self.path, 'z_scalar_plot.pdf')
+        if title is None:
+            title = 'MNP {} Z Scalar Plot'.format(self.mnp.id)
+        if ax is None:
+            fig = plt.figure(figsize = figsize)
+            ax = fig.add_subplot(111)
 
-        ax.set_title('MNP {} Z Plot'.format(self.mnp.id))
-        self.field.orientation.plane(z = 0).z.mpl_scalar(ax = ax,
-                                                         filename = os.path.join(self.path, 'z_scalar_plot.pdf'),
-                                                         figsize = (40, 10), filter_field = self.field.x, **kwargs)
+            ax.set_title(title)
+        self.field.orientation.plane(z = z_plane).z.mpl_scalar(ax = ax,
+                                                               filename = filename,
+                                                               figsize = figsize, filter_field = self.field.x,
+                                                               cmap = cmap, **kwargs)
 
-    def k3d_center_vectors(self, color_field = 'z'):
+    def k3d_center_vectors(self, color_field='z'):
         model_matrix = [
             7.0, 5.0, -5.0, 0.0,
             0.0, 7.0, 7.0, 5.0,
@@ -632,6 +661,7 @@ class MNP_Analyzer:
             0.0, 0.0, 0.0, 1.0
         ]
         center_magnetization = []
+        print("Extracting center magnetization values...")
         for point in self.mnp.scaled_coords:
             center_magnetization.append(
                 ((self.field.orientation.line(p1 = (point), p2 = (0, 0, 0), n = 2).data.vx[0]),
@@ -640,12 +670,14 @@ class MNP_Analyzer:
 
         if color_field == 'z':
             cmap = 'viridis'
+            print('Getting Z values...')
             color_values = np.array(center_magnetization)[:, 2]
-        elif color_field =='angle':
+        elif color_field == 'angle':
+            print("Getting XY angle values...")
             cmap = 'hsv'
             color_values = []
             for point in self.mnp.scaled_coords:
-                color_values.append(self.field.plane(z=0).angle.line(p1 = point, p2=(0,0,0), n=2).data.v[0])
+                color_values.append(self.field.plane(z = 0).angle.line(p1 = point, p2 = (0, 0, 0), n = 2).data.v[0])
         else:
             raise AttributeError("color_field should be either 'z' or 'angle'")
 
@@ -665,4 +697,3 @@ class MNP_Analyzer:
         plot += k3d.vectors(self.mnp.coord_list, center_magnetization, model_matrix = model_matrix, colors = colors,
                             line_width = .02, head_size = 2, use_head = True)
         plot.display()
-
