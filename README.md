@@ -548,6 +548,7 @@ usually need to be called by the user:
 
 - Version 2.1.0 (3 May 2021)
   - Added new method `MNP_Analyzer.mpl_center_vectors()` for plotting and saving 2D vector plots 
+  - Changed default file type for plots to PNG from PDF (can be specified)
 - Version 2.0.0 (14 April 2021)
   - Added new classes (`MNP_System`, `MNP_MinDriver`, `MNP_Analyzer`)
   - Added `quick_drive()` function
