@@ -1,7 +1,7 @@
 # Magnetic Nanoparticle Assembly Utilities (MAGNA-U)
-#### Version 2.0.0
+#### Version 2.1.0
 
-Version 2.0.0 documentation is still a WIP.
+Version 2.1.0 documentation is still a WIP.
 
 MAGNA-U is a Python module that provides tools to simplify the
 modeling and simulation of magnetic nanoparticles (MNPs). MAGNA-U
@@ -546,6 +546,8 @@ usually need to be called by the user:
    
 ### Changelog
 
+- Version 2.1.0 (3 May 2021)
+  - Added new method `MNP_Analyzer.mpl_center_vectors()` for plotting and saving 2D vector plots 
 - Version 2.0.0 (14 April 2021)
   - Added new classes (`MNP_System`, `MNP_MinDriver`, `MNP_Analyzer`)
   - Added `quick_drive()` function
