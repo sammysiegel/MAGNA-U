@@ -587,10 +587,13 @@ class MNP_Analyzer:
         if preload_field:
             self.field = self.mnp.load_any_field('m_final')
 
-    def xy_plot(self, ax=None, title=None, z_plane=0, figsize=(50, 50), filename=None,
+    def xy_plot(self, ax=None, title=None, z_plane=0, figsize=(50, 50), filename=None, filetype=None,
                 scalar_cmap='hsv', vector_cmap='binary', scalar_clim=(0, 6.28), **kwargs):
+        if filetype is None: # filetype defautls to .png
+            filetype = 'png'
         if filename is None:
-            filename = os.path.join(self.path, 'angle_plot.pdf')
+            thefilename = 'angle_plot.' + filetype
+            filename = os.path.join(self.path, thefilename)
         if title is None:
             title = 'MNP {} XY Plot'.format(self.mnp.id)
         if ax is None:
@@ -607,10 +610,13 @@ class MNP_Analyzer:
                                                       scalar_clim = scalar_clim,
                                                       filename = filename, **kwargs)
 
-    def z_plot(self, ax=None, title=None, z_plane=0, figsize=(50, 50), filename=None,
+    def z_plot(self, ax=None, title=None, z_plane=0, figsize=(50, 50), filename=None, filetype=None,
                scalar_cmap='viridis', **kwargs):
+        if filetype is None: # filetype defautls to .png
+            filetype = 'png'
         if filename is None:
-            filename = os.path.join(self.path, 'z_plot.pdf')
+            thefilename = 'z_plot.' + filetype
+            filename = os.path.join(self.path, thefilename)
         if title is None:
             title = 'MNP {} Z Plot'.format(self.mnp.id)
         if ax is None:
@@ -621,10 +627,13 @@ class MNP_Analyzer:
         self.field.orientation.plane(z = z_plane).mpl(ax = ax, figsize = figsize,
                                                       filename = filename, scalar_cmap = scalar_cmap, **kwargs)
 
-    def xy_scalar_plot(self, ax=None, title=None, z_plane=0, figsize=(40, 10), filename=None,
+    def xy_scalar_plot(self, ax=None, title=None, z_plane=0, figsize=(40, 10), filename=None, filetype=None,
                        cmap='hsv', clim=(0, 6.28), **kwargs):
+        if filetype is None: # filetype defautls to .png
+            filetype = 'png'
         if filename is None:
-            filename = os.path.join(self.path, 'xy_scalar_plot.pdf')
+            thefilename = 'xy_scalar_plot.' + filetype
+            filename = os.path.join(self.path, thefilename)
         if title is None:
             title = 'MNP {} XY Scalar Plot'.format(self.mnp.id)
         if ax is None:
@@ -637,10 +646,13 @@ class MNP_Analyzer:
                                                                    figsize = figsize, filter_field = self.field.x,
                                                                    cmap = cmap, clim = clim, **kwargs)
 
-    def z_scalar_plot(self, ax=None, title=None, z_plane=0, figsize=(40, 10), filename=None,
+    def z_scalar_plot(self, ax=None, title=None, z_plane=0, figsize=(40, 10), filename=None, filetype=None,
                       cmap='viridis', **kwargs):
+        if filetype is None: # filetype defautls to .png
+            filetype = 'png'
         if filename is None:
-            filename = os.path.join(self.path, 'z_scalar_plot.pdf')
+            thefilename = 'z_scalar_plot.' + filetype
+            filename = os.path.join(self.path, thefilename)
         if title is None:
             title = 'MNP {} Z Scalar Plot'.format(self.mnp.id)
         if ax is None:
@@ -652,6 +664,39 @@ class MNP_Analyzer:
                                                                filename = filename,
                                                                figsize = figsize, filter_field = self.field.x,
                                                                cmap = cmap, **kwargs)
+
+    def mpl_center_vectors(self, ax=None, title=None, x_label = None, y_label = None, figsize=None, filename=None, filetype=None, **kwargs):
+            center_magnetization = []
+            print("Extracting center magnetization values...")
+            for point in self.mnp.scaled_coords:
+                center_magnetization.append(
+                    ((self.field.orientation.line(p1 = (point), p2 = (0, 0, 0), n = 2).data.vx[0]),
+                    (self.field.orientation.line(p1 = (point), p2 = (0, 0, 0), n = 2).data.vy[0]),
+                    (self.field.orientation.line(p1 = (point), p2 = (0, 0, 0), n = 2).data.vz[0])))
+
+            if figsize is None:
+                figsize = (50,50)
+            if filetype is None: # filetype defautls to .png
+                filetype = 'png'
+            if filename is None:
+                thefilename = '2d_vector_plot.' + filetype
+                filename = os.path.join(self.path, thefilename)
+            if title is None:
+                title = 'MNP {} 2D Vector Plot'.format(self.mnp.id)
+            if x_label is None:
+                x_label = 'x'
+            if y_label is None:
+                y_label = 'y'
+            if ax is None:
+                plt.figure(figsize = figsize)
+                plt.xlabel(x_label)
+                plt.ylabel(y_label)
+                plt.title(title)
+
+            center_magnetization = np.array(center_magnetization)
+            self.mnp.coord_list = np.array(self.mnp.coord_list)
+            plt.quiver(self.mnp.coord_list[:, 0], self.mnp.coord_list[:, 1], center_magnetization[:, 0], center_magnetization[:, 1], center_magnetization[:, 2])
+            plt.savefig(fname = filename)
 
     def k3d_center_vectors(self, color_field='z'):
         model_matrix = [
