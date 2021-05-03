@@ -1,6 +1,8 @@
 # MAGnetic Nanoparticle Assembly Utilities (MAGNA-U)
 
-Github: [https://github.com/sammysiegel/MAGNA-U](https://github.com/sammysiegel/MAGNA-U).
+[![Github](https://img.shields.io/static/v1?label=Github&message=MAGNA-U&color=red&style=for-the-badge&logo=github)](https://github.com/sammysiegel/MAGNA-U) 
+
+[![Release](https://img.shields.io/github/v/release/sammysiegel/MAGNA-U?logo=github&style=for-the-badge)](https://github.com/sammysiegel/MAGNA-U/releases/latest)
 
 ##About
 MAGNA-U is a Python module that provides tools to simplify the
@@ -17,22 +19,28 @@ Ian Hunt-Isaak, and Yumi Ijiri. The `MNP` class is a subclass of
 nanoparticle core-shell assembly and provides tools to simplify
 the simulation of such assemblies in [Ubermag](https://github.com/ubermag/workshop) [^2] using [OOMMF](https://math.nist.gov/oommf/) [^3].
 
-## Commands
-
-* `mkdocs new [dir-name]` - Create a new project.
-* `mkdocs serve` - Start the live-reloading docs server.
-* `mkdocs build` - Build the documentation site.
-* `mkdocs -h` - Print help message and exit.
-
-## Project layout
-
-    mkdocs.yml    # The configuration file.
-    docs/
-        index.md  # The documentation homepage.
-        ...       # Other markdown pages, images and other files.
 
 
-### References
+## Quick Documentation
+
+### Classes 
+|    Name                  |Description      |
+|:------------:        |      -----------      |
+|[`MNP`](MNP.md)        |   The main class responsible for creating, initializing, and simulating MNPs and for storing and managing data about MNPs. A child class of `Lattice`.|
+|[`Lattice`](Lattice.md)|   The parent class for `MNP` which is used to create a lattice geometry of the specified size, shape, and stacking type.|
+|[`MNP_System`](MNP_System.md)|  A child class of `micromagneticmodule.System` used to create systems based on a specific `MNP` instance and initialize an MNP for simulation.|
+|[`MNP_MinDriver`](MNP_Min_Driver.md) |   A child class of `oommfc.MinDriver` used to run an energy minimization drive of a specific `MNP` instance or `MNP_System` instance.|
+
+### Functions
+
+| Name | Description |
+| :-------: | ------- |
+|[`save_mnp`](Save-Load MNPs.md#saving-mnps)| Saves MNP attribute and summary data|
+|[`load_mnp`](Save-Load MNPs.md#loading-mnps)| Instantiates an MNP from data stored in files|
+
+
+
+## References
 [^1]: Y. Ijiri, et. al. Correlated spin canting in ordered core-shell
 Fe3O4/MnFexFe3-xO4 nanoparticle assemblies.
 *Physical Review B* **99**, 094421 (2019).
