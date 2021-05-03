@@ -1,0 +1,22 @@
+site_name: MAGNA-U
+repo_url: "https://github.com/sammysiegel/MAGNA-U"
+
+nav:
+  - Home: index.md
+  - Documentation:
+    - MNP: MNP.md
+    - Save/Load MNPs: Save-Load MNPs.md
+    - MNP Systems: MNP_System.md
+    - MNP Drivers:
+      - Quick Drive: Quick_Drive.md
+      - Minimization Driver: MNP_Min_Driver.md
+    - MNP Analyzer: MNP_Analyzer.md
+    - Lattice: Lattice.md
+
+theme:
+  name: null
+  custom_dir: 'cinder'
+
+markdown_extensions:
+    - toc:
+        baselevel: 1
