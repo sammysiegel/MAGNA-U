@@ -123,4 +123,47 @@ future rather than generated afresh.
 In addition, while the initial magnetic field is by default
 random, you can set it to a constant vector by passing a 3vector tuple for `m0`, such as `m0=(0,0,1)`.
 
-#### 
+#### Field Methods      
+The following methods are used to perform operations on `discretisedfield.Field` object, such as
+saving fields and loading fields: 
+
+ - `maku()`: returns a list `[MNP.m_field, MNP.a_field, MNP.k_field, MNP.u_field]`. You can automatically
+   unpack this into the respective fields by doing something like `M, A, K, U = mnp.maku()`
+ - `save_fields(filepath='default', fields='maku')`: saves all of the fields specified by the `fields`
+   argument, which should contain a string with any of m, a, k, and u. By default, fields are saved to
+   the MNP's standard filepath, but this can be changed by specifying a different `filepath`. Fields
+   are saved in the `.ovf` format.
+ - `save_any_field(field, field_name, filepath='default')`: saves a `df.Field` object to a `.ovf` which
+    is specified by the `field` argument. By default, the field is saved to
+   the MNP's standard filepath, but this can be changed by specifying a different `filepath`. The file name
+   will be `{filepath}/{field_name}_mnp_{MNP.id}.ovf`.
+ - `load_fields(fields='maku', filepath='default')`: loads any of the "maku" fields which are specified
+    by the `fields` string. Files are loaded from the MNP's standard filepath, but can be loaded from a
+   different location by specifying another `filepath`.
+ - `load_any_field(field_name, filepath='default')`: returns a `df.Field` object by loading the
+    field found in the file `{field_name}_mnp_{MNP.id}.ovf` in the `filepath` directory (the default
+   directory is the MNP standard filepath).
+ - `save_all()`: saves both the MNP summary data and the "maku" fields at the same time  
+
+#### Hidden Methods
+These methods are not generally meant to be accessed by the user, but rather are used by other
+methods behind the scenes.
+
+ - `make_easy_axes(self)`: generates a list of random easy axes
+ - `if_circle(self, point, r)`: for a given 3D point determines whether that point is
+   within a radius `r` of any sphere center in `coord_list`
+ - `ms_func(self, point)`: used to determine the saturation magnetization value of a
+   point based on whether it is in the outside, shell, or core of an MNP
+ - `a_func(self, point)`: used to determine the exchange stiffness constant of a
+   point based on whether it is in the outside, shell, or core of an MNP
+ - `k_func(self, point)`: used to determine the magnetic anisotropy constant of a
+   point based on whether it is in the outside, shell, or core of an MNP
+ - `circle_index(self, point, n_list)`: returns the index of a sphere center in `n_list`
+   which is closest to the point.
+ - `u_func(self, point)`: used to determine the uniaxial anisotropy easy axis of a
+   point based on whether it is in the outside, shell, or core of an MNP
+ - `make_m_field(self, m0='random')`: makes the `MNP.m_field` the appropriate `df.Field` object. 
+   By default, m0 is random, but a 3vector tuple can be passed instead.
+ - `make_a_field(self)`: makes the `MNP.a_field` the appropriate `df.Field` object.
+ - `make_k_field(self)`: makes the `MNP.k_field` the appropriate `df.Field` object.
+ - `make_u_field(self)`: makes the `MNP.u_field` the appropriate `df.Field` object.

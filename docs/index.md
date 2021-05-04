@@ -4,6 +4,12 @@
 
 [![Release](https://img.shields.io/github/v/release/sammysiegel/MAGNA-U?logo=github&style=for-the-badge)](https://github.com/sammysiegel/MAGNA-U/releases/latest)
 
+Sammy Siegel<sup>1</sup>, Niels Vanderloo<sup>1</sup>, and Yumi Ijiri<sup>2</sup>
+
+<sup>1</sup> *Oberlin College student, Class of 2023, Physics and Astronomy* 
+
+<sup>2</sup> *Oberlin College faculty, Department of Physics and Astronomy*  
+
 ##About
 MAGNA-U is a Python module that provides tools to simplify the
 modeling and simulation of magnetic nanoparticles (MNPs). MAGNA-U
@@ -19,7 +25,9 @@ Ian Hunt-Isaak, and Yumi Ijiri. The `MNP` class is a subclass of
 nanoparticle core-shell assembly and provides tools to simplify
 the simulation of such assemblies in [Ubermag](https://github.com/ubermag/workshop) [^2] using [OOMMF](https://math.nist.gov/oommf/) [^3].
 
-
+Unfortunately, due to the new file structuring system in Version 2.0.0,
+files created using an older version will not be compatible with the new
+version using the `load_mnp()` function.
 
 ## Quick Documentation
 
@@ -38,7 +46,35 @@ the simulation of such assemblies in [Ubermag](https://github.com/ubermag/worksh
 |[`save_mnp`](Save-Load MNPs.md#saving-mnps)| Saves MNP attribute and summary data|
 |[`load_mnp`](Save-Load MNPs.md#loading-mnps)| Instantiates an MNP from data stored in files|
 
+## Changelog
 
+- Version 2.1.1 (3 May 2021)
+  - Updated documentation using readthedocs.io and mkdocs
+  - Updated `README.md` to remove full documentation and instead link to the readthedocs website
+  - `MNP.save_fields` method will now initialize fields before saving if not already initialized  
+- Version 2.1.0 (3 May 2021)
+  - Added new method `MNP_Analyzer.mpl_center_vectors()` for plotting and saving 2D vector plots 
+  - Changed default file type for plots to PNG from PDF (can be specified)
+- Version 2.0.0 (14 April 2021)
+  - Added new classes (`MNP_System`, `MNP_MinDriver`, `MNP_Analyzer`)
+  - Added `quick_drive()` function
+  - Restructured file system to by name/mnp id, keeping all files in one folder
+  - built in plot options with `MNP_Analyzer`: xy angle, z, xy angle scalar only,
+    z scalar only, k3d sphere center magnetization vector plot
+  - Changed m_field, a_field, k_field, and u_field attributes from being properties
+    that automatically generate a field to needing to be specifically initialized with
+    the new `MNP.initialize()` method. These fields then don't have to be regenerated
+    once this is done.
+- Version 1.1.1 (1 April 2021)
+  - Improved documentation for rectangular shapes
+  - Changed default `layer_dims` for `MNP` to `(3,10)`  
+- Version 1.1.0 (1 April 2021)
+  - addition of `save_fields()` and `load_fields()` methods for `MNP`
+  - support for making `'rectangle'` shaped MNP assemblies
+  - addition of `scaled_coords` property of `MNP`  
+- Version 1.0.1 (23 March 2021)
+  - `setup.py` fixes for install on hpc cluster
+- Version 1.0.0 (22 March 2021)
 
 ## References
 [^1]: Y. Ijiri, et. al. Correlated spin canting in ordered core-shell

@@ -1,8 +1,11 @@
 site_name: MAGNA-U
+site_author: Sammy Siegel, Niels Vanderloo, Yumi Ijiri
 repo_url: "https://github.com/sammysiegel/MAGNA-U"
+
 
 nav:
   - Home: index.md
+  - Installation: Install.md
   - Documentation:
     - MNP: MNP.md
     - Save/Load MNPs: Save-Load MNPs.md

@@ -420,6 +420,8 @@ class MNP(Lattice):
         return self.m_field, self.a_field, self.k_field, self.u_field
 
     def save_fields(self, filepath='default', fields='maku'):
+        if not self.initialized:
+            self.initialize(fields = fields)
         if filepath == 'default':
             path = self.filepath
         else:
