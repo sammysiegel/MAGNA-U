@@ -11,7 +11,7 @@ git clone https://github.com/sammysiegel/MAGNA-U
 ```
 
 If you are running in an Anaconda environment, you can use the `install.py` script that
-comes with MAGNA-U to easily install in to the right place. Simply run:
+comes with MAGNA-U to easily install to the right place. Simply run:
 
 ```bash
 cd MAGNA-U

@@ -1,5 +1,5 @@
 # Magnetic Nanoparticle Assembly Utilities (MAGNA-U)
-#### Version 2.1.1
+#### Version 2.2.0 alpha
 
 | Description| Badge|
 | --------|-------|
