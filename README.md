@@ -1,7 +1,12 @@
 # Magnetic Nanoparticle Assembly Utilities (MAGNA-U)
-#### Version 2.1.0
+#### Version 2.1.1
 
-Version 2.1.0 documentation is still a WIP.
+| Description| Badge|
+| --------|-------|
+| Documentation| [![Docs](https://img.shields.io/static/v1?label=Documentation&message=MAGNA-U&color=red&logo=Read%20the%20Docs&style=for-the-badge)](https://magna-u.readthedocs.io/en/latest/)| 
+| Latest Release| [![Release](https://img.shields.io/github/v/release/sammysiegel/MAGNA-U?logo=github&style=for-the-badge)](https://github.com/sammysiegel/MAGNA-U/releases/latest)|
+
+
 
 MAGNA-U is a Python module that provides tools to simplify the
 modeling and simulation of magnetic nanoparticles (MNPs). MAGNA-U
@@ -17,7 +22,7 @@ Ian Hunt-Isaak, and Yumi Ijiri. The `MNP` class is a subclass of
 nanoparticle core-shell assembly and provides tools to simplify
 the simulation of such assemblies in [Ubermag](https://github.com/ubermag/workshop) [^2] using [OOMMF](https://math.nist.gov/oommf/) [^3].
 
-***NEW*** Unfortunately, due to the new file structuring system in Version 2.0.0,
+Unfortunately, due to the new file structuring system in Version 2.0.0,
 files created using an older version will not be compatible with the new
 version using the `load_mnp()` function.
 
@@ -210,24 +215,7 @@ md = mu.MNP_MinDriver()
 md.drive_system(my_system)
 ```
 
-#### Accessing Individual `discretisedfield` Attributes:
-***WARNING: Deprecated*** MAGNA-U makes it easy to access the various fields created by `discretisedfield` in
-Ubermag. These are all implemented using the `@property` decorator, meaning you
-can use them like you would use any attribute of the class. WARNING: these objects
-may take a long time to generate depending on the size of your MNP assembly.
- - `mesh`: a Mesh object that is of the right size and cell size for the
-   MNP assembly.
- - `m_field`: a three-dimensional Field object representing the initial
-   magnetization of your MNP assembly. Initial magnetization directions are
-   generated randomly.
- - `a_field`: a one-dimensional Field object representing the exchange stiffness
-   constant for every cell in the mesh.
- - `k_field`: a one-dimensional Field object representing the magnetic anisotropy
-   constant for every cell in the mesh.
- - `u_field`: a three-dimensional Field object representing the uniaxial anisotropy
-   easy axis for each point in the mesh.
-   
-#### Generating All Attributes at Once
+#### Generating All "MAKU" Attributes at Once
 When running an Ubermag simulation, it is often necessary to generate fields for
 magnetization (M), exchange stiffness constant (A), magnetic anisotropy constant (K),
 and uniaxial anisotropy easy axes (U). As such there is a way to generate all four
@@ -397,152 +385,6 @@ vectors for the center of each MNP sphere using k3d. You can have the vector fie
 colored by either the z component (default) or the xy angle component by using
 `color_field = 'z'` or `color_field = 'angle'` respectively. Coloring using the xy angles
 will likely take significantly longer than coloring using z.
-
-## Full Documentation
-***WARNING: Some of this is Deprecated***
-#### Lattice Class Attributes
-- `name`: This is currently optional and can be whatever you want. The default is just
-  `'lattice'`.
-- `form`: This specifies the kind of packing. Options are `'hcp'` (default), `'fcc'`,
-  `'scp'`, and `'bcc'`.
-- `shape`: This specifies the shape of a lattice layer. Options are `'circle'`
-  (default), `'hexagon'`, and `'rectangle'`.
-- `n_layers`: The number of lattice layers stacked on top of each other. The default
-  is `n_layers = 3`
-- `layer_radius`: This attribute must be specified for circle and hexagon shapes.
-  For circles, this is the radius of the circle in # of spheres. For hexagons, this is
-  the circumradius/side length of the hexagon in # of spheres.
-- `layer_dims`: This attribute must be specified for rectangular shapes. Provide a
-  tuple in the form (x, y), where x and y are an integer number of spheres.
-
-#### Lattice Class Primary Methods
-- `__init__(self, name='lattice', form = 'hcp', shape = 'circle', n_layers = 3, 
-  layer_radius = 0, layer_dims=(0,0))`: initialization function
-- `layer_coords(self, layer, z=False)`: A function to return the coordinates of a 
-  specified layer. The `layer` argument is the index of the layer, starting at 0 and
-  ending with `n_layers - 1`. The argument `z` specifies whether the z coordinates
-  of the layer are returned or not. If `False`, a 2D array is returned with the
-  x and y coordinates of the layer. If `True`, a 3D array is returned with the
-  x, y, and z coordinates.
-- `list_coordinates(self)`: A function that returns all of the coordinates of the
-  lattice, including all of the layers. Use this if you need a list of all of the
-  coordinates of sphere centers in the lattice.
-- `mpl(self)`: This method will make a 2D plot of the lattice using matplotlib,
-  showing all of the layers projected onto the xy plane.
-- `k3d(self, point_size=.8, color = True)`: This will make a 3D plot of the lattice
-  using k3d using the x, y, and z coordinates of all of the layers. `point_size`
-  will adjust the size of the spheres in the lattice, and `color` will determine
-  whether or not each layer of the lattice is in a different color.
-
-#### Lattice Class Other Functions
-- `gen_coords(num=37, length=10)`: This function is used to generate the (x, y)
-  coordinates for a hexagon-shaped layer of hcp/fcc lattice. This code was developed
-  for earlier research by Kathryn Krycka, Ian Hunt-Isaak, and Yumi Ijiri.
-    - `num_rings(num)`: Returns the number of rings in a hexagon of `num` spheres,
-      rounded up if the number of points passed is not able to generate a complete 
-      hexagon. This is used by `gen_coords()` function.
-    - `num_points(rings)`: This is the inverse of `num_rings`; it returns the number
-      of points in a hexagon of `rings` rings.
-- `cubic_packing_coords(layer_spacing=1, layer_radius=0, shape='circle',
-  layer_dims=(0,0))`: This function is used to generate the (x, y) coordinates of a
-  layer of scp/bcc lattice in any of the three shapes.
-- `hexa_packing_coords(layer_spacing=1/(3**.5 * 2/3), layer_radius=0,
-  shape='circle', layer_dims=(0,0))`: This function is used to generate the
-  (x, y) coordinates of a layer of hcp/fcc lattice. It can generate in any of
-  the three shapes, and it calls the `gen_coords()` function for hexagons.
-  
-#### MNP Class Base Attributes
-- `directory`: A string with the directory in which data relating to the MNP
-   assembly will be stored. If you pass the name of a directory that does not
-   already exist, the program will create it for you.
-    - *default value*: `'./MNP_Data'`
- - `r_tuple`: This function takes a tuple of three values in the form
-   `(r_total, r_shell, r_core)`where r_total is the total radius between
-   individual MNPs, r_shell is the radius of the shell, and r_core is the radius
-   of the core, all in meters.
-    - *default value*: `(3.5e-9, 3.5e-9, 3e-9)`
- -  `discretizations`: this takes a tuple of three values in the form (x, y, z), 
-    where x, y, and z are the number of divisions per r_total that determines how
-    small each cell is in your simulation for each respective axis. A larger number
-    makes more divisions and smaller cells. For example, putting 7 for x would
-    result in a total x discretization length of r_total/7.
-     - *default value:* `(7,7,7)`
- - `ms_tuple`: This function takes a tuple of two values in the form
-   `(ms_shell, ms_core)`where ms_shell is the saturation magnetization of the
-   shell, and ms_core is the saturation magnetization of the core, all in A/m.
-    - *default value*: `(2.4e5, 3.9e5)`
- - `a_tuple`: This function takes a tuple of two values in the form
-   `(a_shell, a_core)`where a_shell is the exchange stiffness constant of the
-   shell, and a_core is the exchange stiffness constant of the core, all in J/m.
-    - *default value*: `(5e-12, 9e-12)` 
- - `k_tuple`: This function takes a tuple of two values in the form
-   `(k_shell, k_core)`where k_shell is the magnetic anisotropy constant of the
-   shell, and k_core is the magnetic anisotropy constant of the core, all in J/m^3.
-    - *default value*: `(2e4, 5.4e4)`
- - `axes`: This is used to specify the easy axes for uniaxial anistropy in each MNP.
-   If you omit this argument, a new random set of easy axes will be generated, but
-   you can pass a list of axes here if you want to use predefined easy axes.
-    - *default value:* `None`
-   
-#### MNP Class `discretisedfield` Attributes
- - `mesh`: a Mesh object that is of the right size and cell size for the
-   MNP assembly.
- - `m_field`: a three-dimensional Field object representing the initial
-   magnetization of your MNP assembly. Initial magnetization directions are
-   generated randomly.
- - `a_field`: a one-dimensional Field object representing the exchange stiffness
-   constant for every cell in the mesh.
- - `k_field`: a one-dimensional Field object representing the magnetic anisotropy
-   constant for every cell in the mesh.
- - `u_field`: a three-dimensional Field object representing the uniaxial anisotropy
-   easy axis for each point in the mesh.
-   
-#### MNP Class Other Attributes
- - `coord_list`: a list of the coordinates of all of the centers of a sphere, generated
-   automatically when a new MNP is instantiated. The spacing between each center is one unit.
- - `scaled_coords`: a list of coordinates of all of the centers of spheres, scaled by `r_total`
-   to be phyisically representative of the MNP scale.
- - `summary`: a string of text containing formatted summary information about an MNP  
-   
-Tuples are also unpacked and stored as follows:
- - `self.r_total, self.r_shell, self.r_core = r_tuple` 
- - `self.x_divs, self.y_divs, self.z_divs = discretizations`
- - `self.ms_shell, self.ms_core = ms_tuple`
- - `self.a_shell, self.a_core = a_tuple`
- - `self.k_shell, self.k_core = k_tuple`
-
-#### MNP Class Methods
- - `maku(self)`: returns the `m_field`, `a_field`, `k_field`, and `u_field` in that order.
- - `save_fields(self,  filepath='default', fields='maku')`: saves all of the fields specified
-    by `fields` to the directory specified by `filepath` (if `default` or unspecified, it is
-    saved to `self.filepath`). `fields` takes a string of letters in any order where `'m'`
-    corresponds to `self.m_field`, `'a'` corresponds to `self.a_field`, `'k'` corresponds to
-    `self.k_field`, and `'u'` corresponds to `self.u_field`.
- - `load_fields(self, fields='maku', filepath = 'default')`: Loads fields associated with an `MNP`.
-    The `fields` and `filepath` arguments function the same way as for `save_fields()`. Returns
-    the fields as a list in the order they are specified by `fields`.
-
-The other functions in the class are used by other methods/attributes and will not
-usually need to be called by the user:
- - `make_easy_axes(self)`: generates a list of random easy axes
- - `if_circle(self, point, r)`: for a given 3D point determines whether that point is
-   within a radius `r` of any sphere center in `coord_list`
- - `ms_func(self, point)`: used to determine the saturation magnetization value of a
-   point based on whether it is in the outside, shell, or core of an MNP
- - `a_func(self, point)`: used to determine the exchange stiffness constant of a
-   point based on whether it is in the outside, shell, or core of an MNP
- - `k_func(self, point)`: used to determine the magnetic anisotropy constant of a
-   point based on whether it is in the outside, shell, or core of an MNP
- - `circle_index(self, point, n_list)`: returns the index of a sphere center in `n_list`
-   which is closest to the point.
- - `u_func(self, point)`: used to determine the uniaxial anisotropy easy axis of a
-   point based on whether it is in the outside, shell, or core of an MNP
-   
-#### Additional Functions
- - `save_mnp(mnp, summary=True, filepath='default')`: saves the specified `mnp` to a
-   file in the directory given by `filepath` with the name `data_mnp_{id#}.mnp`. If
-   `summary=True`, it also saves a markdown formatted readable file with summary 
-   information with the name `summary_mnp_{id#}.md`
    
 ### Changelog
 
