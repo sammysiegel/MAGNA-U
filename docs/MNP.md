@@ -60,7 +60,7 @@ The following attributes are given to an MNP when it is first initialized:
      - *default value:* `(5e-12, 9e-12)` 
  - `k_tuple`: This function takes a tuple of two values in the form
    `(k_shell, k_core)`where k_shell is the magnetic anisotropy constant of the
-   shell, and k_core is the magnetic anisotropy constant of the core, all in J/m^3.
+   shell, and k_core is the magnetic anisotropy constant of the core, all in J/m<sup>3</sup>.
      - *default value:* `(2e4, 5.4e4)`
  - `axes`: This is used to specify the easy axes for uniaxial anistropy in each MNP.
    If you omit this argument, a new random set of easy axes will be generated, but

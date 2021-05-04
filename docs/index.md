@@ -4,18 +4,16 @@
 
 [![Release](https://img.shields.io/github/v/release/sammysiegel/MAGNA-U?logo=github&style=for-the-badge)](https://github.com/sammysiegel/MAGNA-U/releases/latest)
 
-Sammy Siegel<sup>1</sup>, Niels Vanderloo<sup>1</sup>, and Yumi Ijiri<sup>2</sup>
+Sammy Siegel, Niels Vanderloo, and Yumi Ijiri
+ 
+*Oberlin College, Department of Physics and Astronomy, Oberlin OH, 44074*
 
-<sup>1</sup> *Oberlin College student, Class of 2023, Physics and Astronomy* 
-
-<sup>2</sup> *Oberlin College faculty, Department of Physics and Astronomy*  
-
-##About
+## About
 MAGNA-U is a Python module that provides tools to simplify the
 modeling and simulation of magnetic nanoparticles (MNPs). MAGNA-U
 combines into one place all the previous code that has been
 written to model shell/core MnFe2O4/Fe3O4 magnetic nanoparticle
-assemblies [^1]. The code is primarily made up of two classes:
+assemblies [1]. The code is primarily made up of two classes:
 [`Lattice`](Lattice.md) and  [`MNP`](MNP.md). 
 
 The `Lattice` class is used to generate arbitrary lattices of
@@ -23,7 +21,7 @@ close packed spheres in part using code developed by Kathryn Krycka,
 Ian Hunt-Isaak, and Yumi Ijiri. The `MNP` class is a subclass of
 `Lattice` that models the physical parameters of a magnetic
 nanoparticle core-shell assembly and provides tools to simplify
-the simulation of such assemblies in [Ubermag](https://github.com/ubermag/workshop) [^2] using [OOMMF](https://math.nist.gov/oommf/) [^3].
+the simulation of such assemblies in [Ubermag](https://github.com/ubermag/workshop) [2] using [OOMMF](https://math.nist.gov/oommf/) [3].
 
 Unfortunately, due to the new file structuring system in Version 2.0.0,
 files created using an older version will not be compatible with the new
@@ -77,15 +75,15 @@ version using the `load_mnp()` function.
 - Version 1.0.0 (22 March 2021)
 
 ## References
-[^1]: Y. Ijiri, et. al. Correlated spin canting in ordered core-shell
+[1]: Y. Ijiri, et. al. Correlated spin canting in ordered core-shell
 Fe3O4/MnFexFe3-xO4 nanoparticle assemblies.
 *Physical Review B* **99**, 094421 (2019).
 
-[^2]: M. Beg, R. A. Pepper, and H. Fangohr. User interfaces for computational
+[2]: M. Beg, R. A. Pepper, and H. Fangohr. User interfaces for computational
 science: A domain specific language for OOMMF embedded in Python.
 *AIP Advances* **7**, 56025 (2017).
 [https://doi.org/10.1063/1.4977225](https://doi.org/10.1063/1.4977225)
 
-[^3]: M.J. Donahue and D. G. Porter. OOMMF User's Guide, Version 1.0,
+[3]: M.J. Donahue and D. G. Porter. OOMMF User's Guide, Version 1.0,
 Interagency Report NISTIR 6376. National Institute of Standards and
 Technology, Gaithersburg, MD (Sept 1999).
