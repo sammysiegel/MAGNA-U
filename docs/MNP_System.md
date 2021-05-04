@@ -15,6 +15,7 @@ The next step is to initialize the system. You can do this as you would with an 
 object, by setting `system.m` and `system.energy`. However, you can do it more easily by
 using the `initialize()` method of `MNP_System`. Here are a list of arguments you can pass
 to the `initialize()` method:
+
  - `m0`: this is the initial magnetization of each point in the system. By default, this is
     random, but you can also pass a 3vector tuple like `(0, 0, 1)` to make the initial
     magnetization be in a particular direction.
@@ -29,4 +30,4 @@ to the `initialize()` method:
      - *default value:* `Zeeman = True`
  - `H`: if `Zeeman = True`, this is the 3vector in A/m for the external magnetic field
     to be applied.
-   - *default value:* `H = (0, 0, .1/mm.consts.mu0)` (0.1 T in the +Z direction)
+     - *default value:* `H = (0, 0, .1/mm.consts.mu0)` (0.1 T in the +Z direction)
