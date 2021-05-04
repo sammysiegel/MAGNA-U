@@ -22,7 +22,7 @@
   of the layer are returned or not. If `False`, a 2D array is returned with the
   x and y coordinates of the layer. If `True`, a 3D array is returned with the
   x, y, and z coordinates.
-- `list_coordinates(self)`: A function that returns all of the coordinates of the
+- `list_coords(self)`: A function that returns all of the coordinates of the
   lattice, including all of the layers. Use this if you need a list of all of the
   coordinates of sphere centers in the lattice.
 - `mpl(self)`: This method will make a 2D plot of the lattice using matplotlib,
