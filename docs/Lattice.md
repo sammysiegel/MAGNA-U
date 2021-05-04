@@ -1,4 +1,6 @@
-#### Lattice Class Attributes
+# Lattice
+
+### Lattice Class Attributes
 - `name`: This is currently optional and can be whatever you want. The default is just
   `'lattice'`.
 - `form`: This specifies the kind of packing. Options are `'hcp'` (default), `'fcc'`,
@@ -13,7 +15,7 @@
 - `layer_dims`: This attribute must be specified for rectangular shapes. Provide a
   tuple in the form (x, y), where x and y are an integer number of spheres.
 
-#### Lattice Class Primary Methods
+### Lattice Class Primary Methods
 - `__init__(self, name='lattice', form = 'hcp', shape = 'circle', n_layers = 3, 
   layer_radius = 0, layer_dims=(0,0))`: initialization function
 - `layer_coords(self, layer, z=False)`: A function to return the coordinates of a 
@@ -32,7 +34,7 @@
   will adjust the size of the spheres in the lattice, and `color` will determine
   whether or not each layer of the lattice is in a different color.
 
-#### Lattice Class Other Functions
+### Lattice Class Other Functions
 - `gen_coords(num=37, length=10)`: This function is used to generate the (x, y)
   coordinates for a hexagon-shaped layer of hcp/fcc lattice. This code was developed
   for earlier research by Kathryn Krycka, Ian Hunt-Isaak, and Yumi Ijiri.
