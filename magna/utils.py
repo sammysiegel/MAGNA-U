@@ -687,6 +687,7 @@ class MNP_Analyzer:
         if not os.path.isfile(os.path.join(self.mnp.filepath, 'centers_data.csv')):
             self.extract()
         data = np.genfromtxt(os.path.join(self.mnp.filepath, 'centers_data.csv'), delimiter = ',')
+        data = data.reshape(-1,7)
 
         if figsize is None:
             figsize = (50, 50)
@@ -720,7 +721,9 @@ class MNP_Analyzer:
         if not os.path.isfile(os.path.join(self.mnp.filepath, 'centers_data.csv')):
             self.extract()
         data = np.genfromtxt(os.path.join(self.mnp.filepath, 'centers_data.csv'), delimiter = ',')
-        center_magnetization = np.concatenate((data[:, 3], data[:, 4], data[:, 5]))
+        data = data.reshape(-1, 7)
+        center_magnetization = np.column_stack((data[:, 3], data[:, 4], data[:, 5]))
+
 
         if color_field == 'z':
             cmap = 'viridis'
@@ -746,6 +749,7 @@ class MNP_Analyzer:
             colors.append(2 * (cmap_int[cval],))
 
         plot = k3d.plot()
-        plot += k3d.vectors(self.mnp.coord_list, center_magnetization, model_matrix = model_matrix, colors = colors,
-                            line_width = .02, head_size = 2, use_head = True)
         plot.display()
+        plot += k3d.vectors(origins=self.mnp.coord_list.astype(np.float32), vectors=center_magnetization.astype(np.float32), model_matrix = model_matrix, colors = colors,
+                            line_width = .02, head_size = 2, use_head = True)
+
