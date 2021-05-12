@@ -682,7 +682,7 @@ class MNP_Analyzer:
         table = np.column_stack((x, y, z, mx, my, mz, angle))
         table.tofile(os.path.join(self.mnp.filepath, 'centers_data.csv'), sep = ',')
 
-    def mpl_center_vectors(self, ax=None, title=None, x_label=None, y_label=None, figsize=None, filename=None,
+    def mpl_center_vectors(self, color_field = 'z', ax=None, title=None, x_label=None, y_label=None, figsize=None, filename=None,
                            filetype=None, **kwargs):
         if not os.path.isfile(os.path.join(self.mnp.filepath, 'centers_data.csv')):
             self.extract()
@@ -694,7 +694,12 @@ class MNP_Analyzer:
         if filetype is None:  # filetype defautls to .png
             filetype = 'png'
         if filename is None:
-            thefilename = '2d_vector_plot.' + filetype
+            if color_field == 'z':
+                thefilename = '2d_vector_plot_z.' + filetype
+            elif color_field == 'angle':
+                thefilename = '2d_vector_plot_xy.' + filetype
+            else:
+                raise AttributeError("color_field should be either 'z' or 'angle'")
             filename = os.path.join(self.path, thefilename)
         if title is None:
             title = 'MNP {} 2D Vector Plot'.format(self.mnp.id)
@@ -708,7 +713,10 @@ class MNP_Analyzer:
             plt.ylabel(y_label)
             plt.title(title)
 
-        plt.quiver(data[:, 0], data[:, 1], data[:, 3], data[:, 4], data[:, 5])
+        if color_field == 'z':
+            plt.quiver(data[:, 0],data[:, 1], data[:, 3], data[:, 4], data[:, 5], cmap='viridis')
+        elif color_field == 'angle':
+            plt.quiver(data[:, 0], data[:, 1], data[:, 3], data[:, 4], data[:, 6], cmap = 'hsv')
         plt.savefig(fname = filename)
 
     def k3d_center_vectors(self, color_field='z'):

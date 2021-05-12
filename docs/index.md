@@ -47,6 +47,11 @@ version using the `load_mnp()` function.
 
 ## Changelog
 
+- Version 2.2.0 (12 May 2021)
+    - `MNP_Analyzer` now has the `extract()` method which saves center magnetization data,
+        and vector center plots now use this data, making them much faster if already extracted.
+    -  `MNP_Analyzer.mpl_vector_centers()` method can now plot colored by z component or xy angle
+        using the `color_field` parameter.
 - Version 2.1.2 (4 May 2021)
     - Fixed markdown parsing errors in the documentation
     - Added `install.py` for easy install on Anaconda

@@ -1,5 +1,5 @@
 # Magnetic Nanoparticle Assembly Utilities (MAGNA-U)
-#### Version 2.2.0 alpha
+#### Version 2.2.0
 
 | Description| Badge|
 | --------|-------|
@@ -387,7 +387,18 @@ colored by either the z component (default) or the xy angle component by using
 will likely take significantly longer than coloring using z.
    
 ### Changelog
-
+- Version 2.2.0 (12 May 2021)
+    - `MNP_Analyzer` now has the `extract()` method which saves center magnetization data,
+        and vector center plots now use this data, making them much faster if already extracted.
+    -  `MNP_Analyzer.mpl_vector_centers()` method can now plot colored by z component or xy angle
+        using the `color_field` parameter.
+- Version 2.1.2 (4 May 2021)
+    - Fixed markdown parsing errors in the documentation
+    - Added `install.py` for easy install on Anaconda
+- Version 2.1.1 (3 May 2021)
+    - Updated documentation using readthedocs.io and mkdocs
+    - Updated `README.md` to remove full documentation and instead link to the readthedocs website
+    - `MNP.save_fields` method will now initialize fields before saving if not already initialized
 - Version 2.1.0 (3 May 2021)
   - Added new method `MNP_Analyzer.mpl_center_vectors()` for plotting and saving 2D vector plots 
   - Changed default file type for plots to PNG from PDF (can be specified)
