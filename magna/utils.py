@@ -308,7 +308,7 @@ class MNP(Lattice):
         for n in self.coord_list:
             i, j, k = n
             scaled.append((2 * i * self.r_total, 2 * j * self.r_total, 2 * k * self.r_total))
-        return scaled
+        return np.array(scaled)
 
     def make_easy_axes(self):
         possible_axes = [(0, 1, 0), (3 ** .5 / 2, .5, 0), (3 ** .5 / 2, -.5, 0)]
@@ -591,7 +591,7 @@ class MNP_Analyzer:
 
     def xy_plot(self, ax=None, title=None, z_plane=0, figsize=(50, 50), filename=None, filetype=None,
                 scalar_cmap='hsv', vector_cmap='binary', scalar_clim=(0, 6.28), **kwargs):
-        if filetype is None: # filetype defautls to .png
+        if filetype is None:  # filetype defautls to .png
             filetype = 'png'
         if filename is None:
             thefilename = 'angle_plot.' + filetype
@@ -614,7 +614,7 @@ class MNP_Analyzer:
 
     def z_plot(self, ax=None, title=None, z_plane=0, figsize=(50, 50), filename=None, filetype=None,
                scalar_cmap='viridis', **kwargs):
-        if filetype is None: # filetype defautls to .png
+        if filetype is None:  # filetype defautls to .png
             filetype = 'png'
         if filename is None:
             thefilename = 'z_plot.' + filetype
@@ -631,7 +631,7 @@ class MNP_Analyzer:
 
     def xy_scalar_plot(self, ax=None, title=None, z_plane=0, figsize=(40, 10), filename=None, filetype=None,
                        cmap='hsv', clim=(0, 6.28), **kwargs):
-        if filetype is None: # filetype defautls to .png
+        if filetype is None:  # filetype defautls to .png
             filetype = 'png'
         if filename is None:
             thefilename = 'xy_scalar_plot.' + filetype
@@ -650,7 +650,7 @@ class MNP_Analyzer:
 
     def z_scalar_plot(self, ax=None, title=None, z_plane=0, figsize=(40, 10), filename=None, filetype=None,
                       cmap='viridis', **kwargs):
-        if filetype is None: # filetype defautls to .png
+        if filetype is None:  # filetype defautls to .png
             filetype = 'png'
         if filename is None:
             thefilename = 'z_scalar_plot.' + filetype
@@ -667,38 +667,57 @@ class MNP_Analyzer:
                                                                figsize = figsize, filter_field = self.field.x,
                                                                cmap = cmap, **kwargs)
 
-    def mpl_center_vectors(self, ax=None, title=None, x_label = None, y_label = None, figsize=None, filename=None, filetype=None, **kwargs):
-            center_magnetization = []
-            print("Extracting center magnetization values...")
-            for point in self.mnp.scaled_coords:
-                center_magnetization.append(
-                    ((self.field.orientation.line(p1 = (point), p2 = (0, 0, 0), n = 2).data.vx[0]),
-                    (self.field.orientation.line(p1 = (point), p2 = (0, 0, 0), n = 2).data.vy[0]),
-                    (self.field.orientation.line(p1 = (point), p2 = (0, 0, 0), n = 2).data.vz[0])))
+    def extract(self):
+        print("Extracting center magnetization values...")
+        x, y, z = self.mnp.scaled_coords[:, 0], self.mnp.scaled_coords[:, 1], self.mnp.scaled_coords[:, 2]
+        mx = []
+        my = []
+        mz = []
+        angle = []
+        for point in self.mnp.scaled_coords:
+            mx.append(self.field.orientation.line(p1 = (point), p2 = (0, 0, 0), n = 2).data.vx[0]),
+            my.append(self.field.orientation.line(p1 = (point), p2 = (0, 0, 0), n = 2).data.vy[0]),
+            mz.append(self.field.orientation.line(p1 = (point), p2 = (0, 0, 0), n = 2).data.vz[0])
+            angle.append(self.field.plane(z = 0).angle.line(p1 = point, p2 = (0, 0, 0), n = 2).data.v[0])
+        table = np.column_stack((x, y, z, mx, my, mz, angle))
+        table.tofile(os.path.join(self.mnp.filepath, 'centers_data.csv'), sep = ',')
 
-            if figsize is None:
-                figsize = (50,50)
-            if filetype is None: # filetype defautls to .png
-                filetype = 'png'
-            if filename is None:
-                thefilename = '2d_vector_plot.' + filetype
-                filename = os.path.join(self.path, thefilename)
-            if title is None:
-                title = 'MNP {} 2D Vector Plot'.format(self.mnp.id)
-            if x_label is None:
-                x_label = 'x'
-            if y_label is None:
-                y_label = 'y'
-            if ax is None:
-                plt.figure(figsize = figsize)
-                plt.xlabel(x_label)
-                plt.ylabel(y_label)
-                plt.title(title)
+    def mpl_center_vectors(self, color_field = 'z', ax=None, title=None, x_label=None, y_label=None, figsize=None, filename=None,
+                           filetype=None, **kwargs):
+        if not os.path.isfile(os.path.join(self.mnp.filepath, 'centers_data.csv')):
+            self.extract()
+        data = np.genfromtxt(os.path.join(self.mnp.filepath, 'centers_data.csv'), delimiter = ',')
+        data = data.reshape(-1,7)
 
-            center_magnetization = np.array(center_magnetization)
-            self.mnp.coord_list = np.array(self.mnp.coord_list)
-            plt.quiver(self.mnp.coord_list[:, 0], self.mnp.coord_list[:, 1], center_magnetization[:, 0], center_magnetization[:, 1], center_magnetization[:, 2])
-            plt.savefig(fname = filename)
+        if figsize is None:
+            figsize = (50, 50)
+        if filetype is None:  # filetype defautls to .png
+            filetype = 'png'
+        if filename is None:
+            if color_field == 'z':
+                thefilename = '2d_vector_plot_z.' + filetype
+            elif color_field == 'angle':
+                thefilename = '2d_vector_plot_xy.' + filetype
+            else:
+                raise AttributeError("color_field should be either 'z' or 'angle'")
+            filename = os.path.join(self.path, thefilename)
+        if title is None:
+            title = 'MNP {} 2D Vector Plot'.format(self.mnp.id)
+        if x_label is None:
+            x_label = 'x'
+        if y_label is None:
+            y_label = 'y'
+        if ax is None:
+            plt.figure(figsize = figsize)
+            plt.xlabel(x_label)
+            plt.ylabel(y_label)
+            plt.title(title)
+
+        if color_field == 'z':
+            plt.quiver(data[:, 0],data[:, 1], data[:, 3], data[:, 4], data[:, 5], cmap='viridis')
+        elif color_field == 'angle':
+            plt.quiver(data[:, 0], data[:, 1], data[:, 3], data[:, 4], data[:, 6], cmap = 'hsv')
+        plt.savefig(fname = filename)
 
     def k3d_center_vectors(self, color_field='z'):
         model_matrix = [
@@ -707,24 +726,21 @@ class MNP_Analyzer:
             7.0, -5.0, 5.0, 0.0,
             0.0, 0.0, 0.0, 1.0
         ]
-        center_magnetization = []
-        print("Extracting center magnetization values...")
-        for point in self.mnp.scaled_coords:
-            center_magnetization.append(
-                ((self.field.orientation.line(p1 = (point), p2 = (0, 0, 0), n = 2).data.vx[0]),
-                 (self.field.orientation.line(p1 = (point), p2 = (0, 0, 0), n = 2).data.vy[0]),
-                 (self.field.orientation.line(p1 = (point), p2 = (0, 0, 0), n = 2).data.vz[0])))
+        if not os.path.isfile(os.path.join(self.mnp.filepath, 'centers_data.csv')):
+            self.extract()
+        data = np.genfromtxt(os.path.join(self.mnp.filepath, 'centers_data.csv'), delimiter = ',')
+        data = data.reshape(-1, 7)
+        center_magnetization = np.column_stack((data[:, 3], data[:, 4], data[:, 5]))
+
 
         if color_field == 'z':
             cmap = 'viridis'
             print('Getting Z values...')
-            color_values = np.array(center_magnetization)[:, 2]
+            color_values = center_magnetization[:, 2]
         elif color_field == 'angle':
             print("Getting XY angle values...")
             cmap = 'hsv'
-            color_values = []
-            for point in self.mnp.scaled_coords:
-                color_values.append(self.field.plane(z = 0).angle.line(p1 = point, p2 = (0, 0, 0), n = 2).data.v[0])
+            color_values = data[:, 6]
         else:
             raise AttributeError("color_field should be either 'z' or 'angle'")
 
@@ -741,6 +757,7 @@ class MNP_Analyzer:
             colors.append(2 * (cmap_int[cval],))
 
         plot = k3d.plot()
-        plot += k3d.vectors(self.mnp.coord_list, center_magnetization, model_matrix = model_matrix, colors = colors,
-                            line_width = .02, head_size = 2, use_head = True)
         plot.display()
+        plot += k3d.vectors(origins=self.mnp.coord_list.astype(np.float32), vectors=center_magnetization.astype(np.float32), model_matrix = model_matrix, colors = colors,
+                            line_width = .02, head_size = 2, use_head = True)
+

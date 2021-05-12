@@ -18,6 +18,9 @@ scalar only plot, or a 3D plot of the magnetization vectors of the center of eac
 The first two kinds of plots will be automatically saved to your mnp data folder in a
 subdirectory called 'plots'.
 
+### Whole-System Plots
+The following plotting options make a plot of each cell of the MNP system in the
+specified plane.
 #### Vector/Scalar Plot Options:
  - `MNP_Analyzer.xy_plot()`: A plot with the scalar colors showing the angle of the magnetization
    vectors projected onto the xy plane, in radians.
@@ -34,12 +37,20 @@ it accepts. You can also easily set the title with the `title` argument.
 Both of these plots are based on the `df.Field.mpl_scalar()` method and can accept any argument that
 it accepts. You can also easily set the title with the `title` argument.
 
+### Vector Center Magnetization Plots
+The following plotting options will produce plots only of the center cells of each MNP.
+This makes it easier to analyze but requires this data to be extracted from the field data.
+This is done through the `MNP_Analyzer.extract()` method, which will extract the data
+and save it to a file called 'centers_data.csv'. This way, it need only be done once.
+If you have not already extracted the data and make one of the following plots, the data
+will be automatically extracted, which might take some time.
 #### 2D Vector Plot
-The method `MNP_Analyzer.mpl_center_vectors()` will create a 2D plot of the magnetization vectors for the center of each MNP sphere using Matplotlib. The vectors are colored by their z component. This method only supports 1 layer MNP assemblies currently. 
+The method `MNP_Analyzer.mpl_center_vectors()` will create a 2D plot of the magnetization vectors for the center of each MNP sphere using Matplotlib. 
+The vectors are colored by their z component if the argument `color_field='z'` is given or their xy-angle if `color_field='angle'` is given. 
+This method only supports 1 layer MNP assemblies currently. 
 
 #### 3D Vector Plot
 The method `MNP_Analyzer.k3d_center_vectors()` will create a 3D plot of the magnetization
 vectors for the center of each MNP sphere using k3d. You can have the vector field be
 colored by either the z component (default) or the xy angle component by using
-`color_field = 'z'` or `color_field = 'angle'` respectively. Coloring using the xy angles
-will likely take significantly longer than coloring using z.
+`color_field = 'z'` or `color_field = 'angle'` respectively.
