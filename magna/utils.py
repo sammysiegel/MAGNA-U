@@ -831,7 +831,12 @@ class MNP_Hysteresis_Analyzer(MNP_Analyzer):
         super().__init__(mnp, step, preload_field)
 
     def hyst_loop_plot(self, x=None, y=None, figsize=(10,10), x_label = 'Applied Field (T)', y_label = 'Sample Magnetization (a.u.)',
-                       title = None, **kwargs):
+                       title = None, filename = None, filetype = None, **kwargs):
+        if filetype is None:  # filetype defautls to .png
+            filetype = 'png'
+        if filename is None:
+            thefilename = 'hysteresis_loop.' + filetype
+            filename = os.path.join(self.path, thefilename)
         if title is None:
             title = 'MNP {} Hysteresis Loop'.format(self.mnp.id)
         plt.figure(figsize = figsize)
@@ -846,7 +851,7 @@ class MNP_Hysteresis_Analyzer(MNP_Analyzer):
         for i in y:
             plt.plot(data[x], data[i], **kwargs)
         plt.legend(y)
-        plt.show()
+        plt.savefig(fname = filename)
 
     def hyst_steps_plot(self, type = 'xy', name=None, ax=None, title=None, z_plane=0, figsize=(50, 50), filename=None,
                      filetype=None,
