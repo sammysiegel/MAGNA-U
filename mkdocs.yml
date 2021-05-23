@@ -13,7 +13,10 @@ nav:
     - MNP Drivers:
       - Quick Drive: Quick_Drive.md
       - Minimization Driver: MNP_Min_Driver.md
-    - MNP Analyzer: MNP_Analyzer.md
+      - Hysteresis Driver: MNP_HysteresisDriver.md
+    - MNP Analyzers:
+      - MNP Analyzer: MNP_Analyzer.md
+      - MNP Hysteresis Analyzer: MNP_Hysteresis_Analyzer.md
     - Lattice: Lattice.md
 
 theme:

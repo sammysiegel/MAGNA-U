@@ -1,5 +1,5 @@
 # Magnetic Nanoparticle Assembly Utilities (MAGNA-U)
-#### Version 2.2.0
+#### Version 2.3.0
 
 | Description| Badge|
 | --------|-------|
@@ -387,6 +387,15 @@ colored by either the z component (default) or the xy angle component by using
 will likely take significantly longer than coloring using z.
    
 ### Changelog
+- Version 2.3.0 (22 May 2021)
+    - Multiple drives of an MNP can now be run and saved in the `Drives` directory, with the
+        `step` parameter added to the `MNP_Analyzer` to load a specific drive.
+    - The `MNP_HysteresisDriver` can run hysteresis on an MNP, saving final magnetic field and
+        summary data for each step.
+    - The `MNP_Hysteresis_Analyzer` can be used to plot hysteresis loops, plots for each step
+        of the hysteresis, and movies of the hysteresis.
+    - `Install.py` will now prompt you to install `opencv-python` package if not already installed
+      (used for making hysteresis movies)
 - Version 2.2.0 (12 May 2021)
     - `MNP_Analyzer` now has the `extract()` method which saves center magnetization data,
         and vector center plots now use this data, making them much faster if already extracted.

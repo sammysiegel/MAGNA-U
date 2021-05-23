@@ -59,3 +59,4 @@ must be available in your environment in order to work:
  - `numpy`
  - `discretisedfield`, `micromagneticmodel`, and `oommfc` from Ubermag
  - `matplotlib` and `k3d` for plotting
+ - `opencv-python` (import as `cv2`) 

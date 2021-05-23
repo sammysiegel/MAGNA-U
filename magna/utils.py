@@ -13,6 +13,8 @@ import matplotlib.cm
 import matplotlib.colors
 import matplotlib.pyplot as plt
 import k3d
+import pandas as pd
+import cv2
 
 
 def num_rings(num):
@@ -560,19 +562,75 @@ class MNP_System(mm.System):
             self.energy += mm.Zeeman(H = H)
 
 
+def how_many_m_finals(mnp):
+    path, dirs, files = next(os.walk(os.path.join(mnp.filepath, 'drives')))
+    number = 0
+    for f in files:
+        if 'm_final' in f:
+            number += 1
+    return number
+
+
 class MNP_MinDriver(mc.MinDriver):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
     def drive_mnp(self, mnp, **kwargs):
+        drivepath = os.path.join(mnp.filepath, 'drives')
+        if not os.path.isdir(drivepath):
+            os.mkdir(drivepath)
         system = MNP_System(mnp)
         system.initialize()
         self.drive(system, **kwargs)
-        mnp.save_any_field(system.m, field_name = 'm_final', filepath = mnp.filepath)
+        mnp.save_any_field(system.m, field_name = 'm_final_{}'.format(how_many_m_finals(mnp)), filepath = drivepath)
 
     def drive_system(self, system, **kwargs):
+        drivepath = os.path.join(system.mnp.filepath, 'drives')
+        if not os.path.isdir(drivepath):
+            os.mkdir(drivepath)
         self.drive(system, **kwargs)
-        system.mnp.save_any_field(system.m, field_name = 'm_final', filepath = system.mnp.filepath)
+        system.mnp.save_any_field(system.m, field_name = 'm_final_{}'.format(how_many_m_finals(system.mnp)),
+                                  filepath = drivepath)
+
+
+def make_h_list(Hmin, Hmax, n):
+    hmin = np.array(Hmin)
+    hmax = np.array(Hmax)
+    interval = (1 / n) * np.add(hmax, -1 * hmin)
+    h_list = [np.add(hmin, interval * k) for k in range(n)] + [np.add(hmax, -1 * interval * k) for k in range(n + 1)]
+    return h_list
+
+
+class MNP_HysteresisDriver(mc.HysteresisDriver):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def drive_hysteresis(self, mnp, Hmin=(0, 10, -1 / mm.consts.mu0), Hmax=(0, 0, 1 / mm.consts.mu0), n=10,
+                         **kwargs):
+        drivepath = os.path.join(mnp.filepath, 'drives')
+        if not os.path.isdir(drivepath):
+            os.mkdir(drivepath)
+        system = mm.System(name = 'DELETE')
+        M, A, K, U = mnp.maku()
+        system.m = M
+        data_rows = []
+        h_list = make_h_list(Hmin, Hmax, n)
+        stage = 0
+        for h in h_list:
+            system.energy = mm.Demag() + mm.Exchange(A = A) + mm.UniaxialAnisotropy(K = K, u = U) + mm.Zeeman(H = h)
+            md = mc.MinDriver()
+            md.drive(system, **kwargs)
+            mnp.save_any_field(system.m, field_name = 'm_final_{}'.format(how_many_m_finals(mnp)), filepath = drivepath)
+            system.table.data['stage'] = stage
+            stage += 1
+            system.table.data['B'] = np.linalg.norm(h) * mm.consts.mu0
+            system.table.data['Bx'] = h[0] * mm.consts.mu0
+            system.table.data['By'] = h[1] * mm.consts.mu0
+            system.table.data['Bz'] = h[2] * mm.consts.mu0
+            data_rows.append(system.table.data)
+        table = pd.concat([data for data in data_rows])
+        table.to_csv(os.path.join(mnp.filepath, 'hysteresis_data.csv'))
+        print('Hysteresis data saved to ', os.path.join(mnp.filepath, 'hysteresis_data.csv'))
 
 
 def quick_drive(mnp, **kwargs):
@@ -581,13 +639,17 @@ def quick_drive(mnp, **kwargs):
 
 
 class MNP_Analyzer:
-    def __init__(self, mnp, preload_field=True):
+    def __init__(self, mnp, step=None, preload_field=True):
         self.mnp = mnp
         self.path = os.path.join(self.mnp.filepath, 'plots')
         if not os.path.isdir(self.path):
             os.mkdir(self.path)
         if preload_field:
-            self.field = self.mnp.load_any_field('m_final')
+            if step is None:
+                self.field = self.mnp.load_any_field('m_final')
+            else:
+                self.field = self.mnp.load_any_field('m_final_{}'.format(step),
+                                                     filepath = os.path.join(self.mnp.filepath, 'drives'))
 
     def xy_plot(self, ax=None, title=None, z_plane=0, figsize=(50, 50), filename=None, filetype=None,
                 scalar_cmap='hsv', vector_cmap='binary', scalar_clim=(0, 6.28), **kwargs):
@@ -682,12 +744,13 @@ class MNP_Analyzer:
         table = np.column_stack((x, y, z, mx, my, mz, angle))
         table.tofile(os.path.join(self.mnp.filepath, 'centers_data.csv'), sep = ',')
 
-    def mpl_center_vectors(self, color_field = 'z', ax=None, title=None, x_label=None, y_label=None, figsize=None, filename=None,
+    def mpl_center_vectors(self, color_field='z', ax=None, title=None, x_label=None, y_label=None, figsize=None,
+                           filename=None,
                            filetype=None, **kwargs):
         if not os.path.isfile(os.path.join(self.mnp.filepath, 'centers_data.csv')):
             self.extract()
         data = np.genfromtxt(os.path.join(self.mnp.filepath, 'centers_data.csv'), delimiter = ',')
-        data = data.reshape(-1,7)
+        data = data.reshape(-1, 7)
 
         if figsize is None:
             figsize = (50, 50)
@@ -714,7 +777,7 @@ class MNP_Analyzer:
             plt.title(title)
 
         if color_field == 'z':
-            plt.quiver(data[:, 0],data[:, 1], data[:, 3], data[:, 4], data[:, 5], cmap='viridis')
+            plt.quiver(data[:, 0], data[:, 1], data[:, 3], data[:, 4], data[:, 5], cmap = 'viridis')
         elif color_field == 'angle':
             plt.quiver(data[:, 0], data[:, 1], data[:, 3], data[:, 4], data[:, 6], cmap = 'hsv')
         plt.savefig(fname = filename)
@@ -731,7 +794,6 @@ class MNP_Analyzer:
         data = np.genfromtxt(os.path.join(self.mnp.filepath, 'centers_data.csv'), delimiter = ',')
         data = data.reshape(-1, 7)
         center_magnetization = np.column_stack((data[:, 3], data[:, 4], data[:, 5]))
-
 
         if color_field == 'z':
             cmap = 'viridis'
@@ -758,6 +820,127 @@ class MNP_Analyzer:
 
         plot = k3d.plot()
         plot.display()
-        plot += k3d.vectors(origins=self.mnp.coord_list.astype(np.float32), vectors=center_magnetization.astype(np.float32), model_matrix = model_matrix, colors = colors,
+        plot += k3d.vectors(origins = self.mnp.coord_list.astype(np.float32),
+                            vectors = center_magnetization.astype(np.float32), model_matrix = model_matrix,
+                            colors = colors,
                             line_width = .02, head_size = 2, use_head = True)
 
+
+class MNP_Hysteresis_Analyzer(MNP_Analyzer):
+    def __init__(self, mnp, step=None, preload_field=False):
+        super().__init__(mnp, step, preload_field)
+
+    def hyst_loop_plot(self, x=None, y=None, figsize=(10,10), x_label = 'Applied Field (T)', y_label = 'Sample Magnetization (a.u.)',
+                       title = None, filename = None, filetype = None, **kwargs):
+        if filetype is None:  # filetype defautls to .png
+            filetype = 'png'
+        if filename is None:
+            thefilename = 'hysteresis_loop.' + filetype
+            filename = os.path.join(self.path, thefilename)
+        if title is None:
+            title = 'MNP {} Hysteresis Loop'.format(self.mnp.id)
+        plt.figure(figsize = figsize)
+        plt.xlabel(x_label)
+        plt.ylabel(y_label)
+        plt.title(title)
+        if y is None:
+            y = ['mz']
+        if x is None:
+            x = ['Bz']
+        data = pd.read_csv(os.path.join(self.mnp.filepath, 'hysteresis_data.csv'))
+        for i in y:
+            plt.plot(data[x], data[i], **kwargs)
+        plt.legend(y)
+        plt.savefig(fname = filename)
+
+    def hyst_steps_plot(self, type = 'xy', name=None, ax=None, title=None, z_plane=0, figsize=(50, 50), filename=None,
+                     filetype=None,
+                     scalar_cmap=None, vector_cmap=None, scalar_clim=None, **kwargs):
+        if name is None:
+           name = type + '_hysteresis_plot'
+        savepath = os.path.join(self.path, name)
+        if not os.path.isdir(savepath):
+            os.mkdir(savepath)
+        print('Plotting...')
+        max = how_many_m_finals(self.mnp)
+        for n in range(max):
+            print('\r' + "|{}{}| {}/{}".format('-'*(n) +'>', ' '*(max-n-1), n+1, max), end='')
+            self.field = self.mnp.load_any_field('m_final_{}'.format(n),
+                                                 filepath = os.path.join(self.mnp.filepath, 'drives'))
+            if type == 'xy':
+                title = 'MNP {} XY Plot Step {}'.format(self.mnp.id, n)
+                filename = os.path.join(savepath, 'xy_plot_{}.png'.format(n))
+                if scalar_cmap is None:
+                    scalar_cmap = 'hsv'
+                if vector_cmap is None:
+                    vector_cmap = 'binary'
+                if scalar_clim is None:
+                    scalar_clim=(0, 6.28)
+                self.xy_plot(title = title, ax = ax, z_plane=z_plane, figsize = figsize, filename = filename, filetype = filetype,
+                             scalar_cmap = scalar_cmap, vector_cmap = vector_cmap, scalar_clim = scalar_clim, **kwargs)
+            elif type == 'z':
+                title = 'MNP {} Z Plot Step {}'.format(self.mnp.id, n)
+                filename = os.path.join(savepath, 'z_plot_{}.png'.format(n))
+                if scalar_cmap is None:
+                    scalar_cmap = 'viridis'
+                if scalar_clim is None:
+                    scalar_clim = (-1,1)
+                self.z_plot(title = title, ax = ax, z_plane = z_plane, figsize = figsize, filename = filename, filetype = filetype,
+                            scalar_cmap = scalar_cmap, scalar_clim=scalar_clim, **kwargs)
+            elif type == 'xy_scalar':
+                title = 'MNP {} XY Scalar Plot Step {}'.format(self.mnp.id, n)
+                filename = os.path.join(savepath, 'xy_scalar_plot_{}.png'.format(n))
+                if scalar_cmap is None:
+                    scalar_cmap = 'hsv'
+                if scalar_clim is None:
+                    scalar_clim = (0, 6.28)
+                self.xy_scalar_plot(title = title, ax = ax, z_plane = z_plane, figsize = figsize, filename = filename, filetype = filetype,
+                                    cmap = scalar_cmap, clim = scalar_clim, **kwargs)
+            elif type == 'z_scalar':
+                title = 'MNP {} Z Scalar Plot Step {}'.format(self.mnp.id, n)
+                filename = os.path.join(savepath, 'z_scalar_plot_{}.png'.format(n))
+                if scalar_cmap is None:
+                    scalar_cmap = 'viridis'
+                if scalar_clim is None:
+                    scalar_clim = (-1,1)
+                self.z_scalar_plot(ax = ax, title = title, z_plane = z_plane, figsize = figsize, filename = filename, filetype = filetype,
+                                   cmap = scalar_cmap, scalar_clim=scalar_clim, **kwargs)
+        print('\r')
+
+    def hyst_movie(self, type = 'xy', movie_name=None, name=None, **kwargs):
+        if movie_name is None:
+            movie_name=os.path.join(self.path,'{}_hysteresis.mp4'.format(type))
+        if name is None:
+            if type=='xy':
+                name='xy_hysteresis_plot'
+            elif type=='z':
+                name ='z_hysteresis_plot'
+            elif type=='xy_scalar':
+                name = 'xy_scalar_hysteresis_plot'
+            elif type=='z_scalar':
+                name = 'z_scalar_hysteresis_plot'
+        findpath = os.path.join(self.path, name)
+        if not os.path.isdir(findpath):
+            self.hyst_steps_plot(type = type, name = name, **kwargs)
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        images = []
+        for n in range(how_many_m_finals(self.mnp)):
+            if type=='xy':
+                images.append(os.path.join(findpath, 'xy_plot_{}.png'.format(n)))
+            if type=='z':
+                images.append(os.path.join(findpath, 'z_plot_{}.png'.format(n)))
+            if type=='xy_scalar':
+                images.append(os.path.join(findpath, 'xy_scalar_plot_{}.png'.format(n)))
+            if type=='z_scalar':
+                images.append(os.path.join(findpath, 'z_scalar_plot_{}.png'.format(n)))
+        frame = cv2.imread(images[0])
+        height, width, layers = frame.shape
+        video = cv2.VideoWriter(movie_name, fourcc, 1.0, (width, height))
+        dim = (int(width), int(height))
+        for image in images:
+            frame = cv2.imread(image)
+            frame = cv2.resize(frame,dim)
+            video.write(frame)
+        cv2.destroyAllWindows()
+        video.release()
+        print('Movie saved to ' + movie_name)
