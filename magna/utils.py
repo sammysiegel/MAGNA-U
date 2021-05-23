@@ -605,7 +605,7 @@ class MNP_HysteresisDriver(mc.HysteresisDriver):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def drive_hysteresis(self, mnp, Hmin=(0, 0, -1 / mm.consts.mu0), Hmax=(0, 0, 1 / mm.consts.mu0), n=10,
+    def drive_hysteresis(self, mnp, Hmin=(0, 10, -1 / mm.consts.mu0), Hmax=(0, 0, 1 / mm.consts.mu0), n=10,
                          **kwargs):
         drivepath = os.path.join(mnp.filepath, 'drives')
         if not os.path.isdir(drivepath):

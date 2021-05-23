@@ -18,6 +18,15 @@ scalar only plot, or a 3D plot of the magnetization vectors of the center of eac
 The first two kinds of plots will be automatically saved to your mnp data folder in a
 subdirectory called 'plots'.
 
+#### Load a particular drive
+As of Version 2.3.0, you can load a particular drive of an MNP if it is saved in the `Drives`
+folder by using the `step` argument when initializing. For example:
+```python
+import magna.utils as mu
+my_mnp = mu.load_mnp(0, name = 'my_name', filepath = './my_directory')
+plotter = mu.MNP_Analyzer(my_mnp, step = 3)
+```
+
 ### Whole-System Plots
 The following plotting options make a plot of each cell of the MNP system in the
 specified plane.
