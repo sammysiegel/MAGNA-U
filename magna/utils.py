@@ -543,8 +543,8 @@ def load_mnp(id, name='lattice', filepath='./MNP_Data', fields=''):
 
 class MNP_System(mm.System):
     def __init__(self, mnp, **kwargs):
-        super().__init__(name = '{}_{}'.format(mnp.name, mnp.id), **kwargs)
-        self.mnp = mnp
+            super().__init__(name = 'DELETE', **kwargs)
+            self.mnp = mnp
 
     def initialize(self, m0='random', Demag=True, Exchange=True, UniaxialAnisotropy=True, Zeeman=True,
                    H=(0, 0, .1 / mm.consts.mu0)):
@@ -639,13 +639,13 @@ def quick_drive(mnp, **kwargs):
 
 
 class MNP_Analyzer:
-    def __init__(self, mnp, step=None, preload_field=True):
+    def __init__(self, mnp, step=0, preload_field=True):
         self.mnp = mnp
         self.path = os.path.join(self.mnp.filepath, 'plots')
         if not os.path.isdir(self.path):
             os.mkdir(self.path)
         if preload_field:
-            if step is None:
+            if step ==0 and os.path.isfile(os.path.join(self.mnp.filepath, 'm_final_mnp_{}.ovf'.format(self.mnp.id))):
                 self.field = self.mnp.load_any_field('m_final')
             else:
                 self.field = self.mnp.load_any_field('m_final_{}'.format(step),
@@ -907,7 +907,7 @@ class MNP_Hysteresis_Analyzer(MNP_Analyzer):
                                    cmap = scalar_cmap, scalar_clim=scalar_clim, **kwargs)
         print('\r')
 
-    def hyst_movie(self, type = 'xy', movie_name=None, name=None, **kwargs):
+    def hyst_movie(self, type = 'z', movie_name=None, name=None, **kwargs):
         if movie_name is None:
             movie_name=os.path.join(self.path,'{}_hysteresis.mp4'.format(type))
         if name is None:
