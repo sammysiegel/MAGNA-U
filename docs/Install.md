@@ -14,7 +14,7 @@ If you are running in an Anaconda environment, you can use the `install.py` scri
 comes with MAGNA-U to easily install to the right place. Simply run:
 
 ```bash
-cd MAGNA-Uz
+cd MAGNA-U
 python install.py
 ```
 
@@ -22,7 +22,7 @@ This will install MAGNA-U to a location like `/[path_to_anaconda]/envs/[env_name
 If you are not in an Anaconda environment, you can run a command like this:
 
 ```bash
-cd MAGNA-Uz
+cd MAGNA-U
 PYTHONUSERBASE=/path/to/install/location pip install .
 ```
 

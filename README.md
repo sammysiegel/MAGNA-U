@@ -62,7 +62,7 @@ There are two ways to install MAGNA-U:
    something like `/[path_to_anaconda]/envs/[env_name]/lib/python3.8/site-packages`.
    Once you have downloaded the MAGNA-U repository from Github, do the following:
    ```bash
-   cd MAGNA-Uz
+   cd MAGNA-U
    PYTHONUSERBASE=/[path_to_anaconda]/envs/[env_name]/lib/python3.8/site-packages pip install .
    ```
    

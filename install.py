@@ -27,7 +27,7 @@ os.system(command)
 try:
     import cv2
 except ModuleNotFoundError:
-    print('\033[0;33;40mWARNING: MAGNA-Uz has detected that the python module OpenCV is not installed. This is needed'
+    print('\033[0;33;40mWARNING: MAGNA-U has detected that the python module OpenCV is not installed. This is needed'
           ' in order to make movies of hysteresis loops.')
     answer = input('Would you like to install OpenCV now? [y/n]\033[0;0m')
     if answer == 'y':

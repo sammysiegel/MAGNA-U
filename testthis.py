@@ -6,7 +6,7 @@ failed = 0
 fail_list = []
 
 print('----------------------------------------------------------')
-print('MAGNA-Uz Test')
+print('MAGNA-U Test')
 print('----------------------------------------------------------')
 print('\n', 'Testing Dependencies...', '\n')
 
