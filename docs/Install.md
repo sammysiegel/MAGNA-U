@@ -33,6 +33,12 @@ print(sys.path)
 ```
 
 This will give you a list of places which will work to put the package.
+
+You can test to see whether MAGNA-U is working by running in the MAGNA-U directory:
+
+```python
+python testthis.py
+```
    
 Once it is installed you can import using:
 ```python

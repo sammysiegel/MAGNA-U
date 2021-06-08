@@ -50,7 +50,14 @@ version using the `load_mnp()` function.
 |[`quick_drive`](Quick_Drive.md)| Easy way to drive an MNP assembly|
 
 ## Changelog
-
+- Version 2.3.2 (8 Jun 2021)
+    - fixed `MNP_Analyzer.extract()` to allow it to extract angle values for centers
+        not in the `z = 0` plane
+- Version 2.3.1 (27 May 2021)
+    - addition of testthis.py
+    - MNP_Analyzer Preloading fixes
+    - MNP_system name attribute changed to 'DELETE'
+    - install.py can add `matplotlib.use('Agg')`
 - Version 2.3.0 (22 May 2021)
     - Multiple drives of an MNP can now be run and saved in the `Drives` directory, with the
         `step` parameter added to the `MNP_Analyzer` to load a specific drive.

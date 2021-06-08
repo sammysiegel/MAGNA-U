@@ -239,7 +239,7 @@ class Lattice:
 class MNP(Lattice):
     def __init__(self, id,
                  r_tuple=(3.5e-9, 3.5e-9, 3e-9),
-                 discretizations=(7, 7, 7),
+                 discretizations=(4, 4, 4),
                  ms_tuple=(2.4e5, 3.9e5),
                  a_tuple=(5e-12, 9e-12),
                  k_tuple=(2e4, 5.4e4),
@@ -739,8 +739,9 @@ class MNP_Analyzer:
         for point in self.mnp.scaled_coords:
             mx.append(self.field.orientation.line(p1 = (point), p2 = (0, 0, 0), n = 2).data.vx[0]),
             my.append(self.field.orientation.line(p1 = (point), p2 = (0, 0, 0), n = 2).data.vy[0]),
-            mz.append(self.field.orientation.line(p1 = (point), p2 = (0, 0, 0), n = 2).data.vz[0])
-            angle.append(self.field.plane(z = 0).angle.line(p1 = point, p2 = (0, 0, 0), n = 2).data.v[0])
+            z = (self.field.orientation.line(p1 = (point), p2 = (0, 0, 0), n = 2).data.vz[0])
+            mz.append(z)
+            angle.append(self.field.plane(z = z).angle.line(p1 = point, p2 = (0, 0, z), n = 2).data.v[0])
         table = np.column_stack((x, y, z, mx, my, mz, angle))
         table.tofile(os.path.join(self.mnp.filepath, 'centers_data.csv'), sep = ',')
 
