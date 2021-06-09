@@ -1,5 +1,5 @@
 # Magnetic Nanoparticle Assembly Utilities (MAGNA-U)
-#### Version 2.3.2
+#### Version 2.3.3
 
 | Description| Badge|
 | --------|-------|
@@ -387,7 +387,7 @@ colored by either the z component (default) or the xy angle component by using
 will likely take significantly longer than coloring using z.
    
 ### Changelog
-- Version 2.3.2 (8 Jun 2021)
+- Version 2.3.2 and 2.3.3 (8 Jun 2021)
     - fixed `MNP_Analyzer.extract()` to allow it to extract angle values for centers
         not in the `z = 0` plane
 - Version 2.3.1 (27 May 2021)
