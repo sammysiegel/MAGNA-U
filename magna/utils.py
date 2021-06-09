@@ -543,8 +543,8 @@ def load_mnp(id, name='lattice', filepath='./MNP_Data', fields=''):
 
 class MNP_System(mm.System):
     def __init__(self, mnp, **kwargs):
-            super().__init__(name = 'DELETE', **kwargs)
-            self.mnp = mnp
+        super().__init__(name = 'DELETE', **kwargs)
+        self.mnp = mnp
 
     def initialize(self, m0='random', Demag=True, Exchange=True, UniaxialAnisotropy=True, Zeeman=True,
                    H=(0, 0, .1 / mm.consts.mu0)):
@@ -645,7 +645,7 @@ class MNP_Analyzer:
         if not os.path.isdir(self.path):
             os.mkdir(self.path)
         if preload_field:
-            if step ==0 and os.path.isfile(os.path.join(self.mnp.filepath, 'm_final_mnp_{}.ovf'.format(self.mnp.id))):
+            if step == 0 and os.path.isfile(os.path.join(self.mnp.filepath, 'm_final_mnp_{}.ovf'.format(self.mnp.id))):
                 self.field = self.mnp.load_any_field('m_final')
             else:
                 self.field = self.mnp.load_any_field('m_final_{}'.format(step),
@@ -783,7 +783,9 @@ class MNP_Analyzer:
             plt.quiver(data[:, 0], data[:, 1], data[:, 3], data[:, 4], data[:, 6], cmap = 'hsv')
         plt.savefig(fname = filename)
 
-    def k3d_center_vectors(self, color_field='z'):
+    def k3d_center_vectors(self, color_field='z', cmap=None, scale=None):
+        if scale is None:
+            scale = [1, 1, 1]
         model_matrix = [
             7.0, 5.0, -5.0, 0.0,
             0.0, 7.0, 7.0, 5.0,
@@ -795,17 +797,27 @@ class MNP_Analyzer:
         data = np.genfromtxt(os.path.join(self.mnp.filepath, 'centers_data.csv'), delimiter = ',')
         data = data.reshape(-1, 7)
         center_magnetization = np.column_stack((data[:, 3], data[:, 4], data[:, 5]))
+        data[:, 0] = scale[0] * data[:, 0]
+        data[:, 1] = scale[1] * data[:, 1]
+        data[:, 2] = scale[2] * data[:, 2]
 
         if color_field == 'z':
-            cmap = 'viridis'
+            if cmap is None:
+                cmap = 'viridis'
             print('Getting Z values...')
             color_values = center_magnetization[:, 2]
         elif color_field == 'angle':
             print("Getting XY angle values...")
-            cmap = 'hsv'
+            if cmap is None:
+                cmap = 'hsv'
             color_values = data[:, 6]
+        elif color_field == 'layer':
+            print("Getting Layer...")
+            if cmap is None:
+                cmap = 'hot'
+            color_values = data[:, 2]
         else:
-            raise AttributeError("color_field should be either 'z' or 'angle'")
+            raise AttributeError("color_field should be 'z', 'angle', or 'layer'.")
 
         color_values = dfu.normalise_to_range(color_values, (0, 255))
         # Generate double pairs (body, head) for colouring vectors.
@@ -831,8 +843,9 @@ class MNP_Hysteresis_Analyzer(MNP_Analyzer):
     def __init__(self, mnp, step=None, preload_field=False):
         super().__init__(mnp, step, preload_field)
 
-    def hyst_loop_plot(self, x=None, y=None, figsize=(10,10), x_label = 'Applied Field (T)', y_label = 'Sample Magnetization (a.u.)',
-                       title = None, filename = None, filetype = None, **kwargs):
+    def hyst_loop_plot(self, x=None, y=None, figsize=(10, 10), x_label='Applied Field (T)',
+                       y_label='Sample Magnetization (a.u.)',
+                       title=None, filename=None, filetype=None, **kwargs):
         if filetype is None:  # filetype defautls to .png
             filetype = 'png'
         if filename is None:
@@ -854,18 +867,18 @@ class MNP_Hysteresis_Analyzer(MNP_Analyzer):
         plt.legend(y)
         plt.savefig(fname = filename)
 
-    def hyst_steps_plot(self, type = 'xy', name=None, ax=None, title=None, z_plane=0, figsize=(50, 50), filename=None,
-                     filetype=None,
-                     scalar_cmap=None, vector_cmap=None, scalar_clim=None, **kwargs):
+    def hyst_steps_plot(self, type='xy', name=None, ax=None, title=None, z_plane=0, figsize=(50, 50), filename=None,
+                        filetype=None,
+                        scalar_cmap=None, vector_cmap=None, scalar_clim=None, **kwargs):
         if name is None:
-           name = type + '_hysteresis_plot'
+            name = type + '_hysteresis_plot'
         savepath = os.path.join(self.path, name)
         if not os.path.isdir(savepath):
             os.mkdir(savepath)
         print('Plotting...')
         max = how_many_m_finals(self.mnp)
         for n in range(max):
-            print('\r' + "|{}{}| {}/{}".format('-'*(n) +'>', ' '*(max-n-1), n+1, max), end='')
+            print('\r' + "|{}{}| {}/{}".format('-' * (n) + '>', ' ' * (max - n - 1), n + 1, max), end = '')
             self.field = self.mnp.load_any_field('m_final_{}'.format(n),
                                                  filepath = os.path.join(self.mnp.filepath, 'drives'))
             if type == 'xy':
@@ -876,8 +889,9 @@ class MNP_Hysteresis_Analyzer(MNP_Analyzer):
                 if vector_cmap is None:
                     vector_cmap = 'binary'
                 if scalar_clim is None:
-                    scalar_clim=(0, 6.28)
-                self.xy_plot(title = title, ax = ax, z_plane=z_plane, figsize = figsize, filename = filename, filetype = filetype,
+                    scalar_clim = (0, 6.28)
+                self.xy_plot(title = title, ax = ax, z_plane = z_plane, figsize = figsize, filename = filename,
+                             filetype = filetype,
                              scalar_cmap = scalar_cmap, vector_cmap = vector_cmap, scalar_clim = scalar_clim, **kwargs)
             elif type == 'z':
                 title = 'MNP {} Z Plot Step {}'.format(self.mnp.id, n)
@@ -885,9 +899,10 @@ class MNP_Hysteresis_Analyzer(MNP_Analyzer):
                 if scalar_cmap is None:
                     scalar_cmap = 'viridis'
                 if scalar_clim is None:
-                    scalar_clim = (-1,1)
-                self.z_plot(title = title, ax = ax, z_plane = z_plane, figsize = figsize, filename = filename, filetype = filetype,
-                            scalar_cmap = scalar_cmap, scalar_clim=scalar_clim, **kwargs)
+                    scalar_clim = (-1, 1)
+                self.z_plot(title = title, ax = ax, z_plane = z_plane, figsize = figsize, filename = filename,
+                            filetype = filetype,
+                            scalar_cmap = scalar_cmap, scalar_clim = scalar_clim, **kwargs)
             elif type == 'xy_scalar':
                 title = 'MNP {} XY Scalar Plot Step {}'.format(self.mnp.id, n)
                 filename = os.path.join(savepath, 'xy_scalar_plot_{}.png'.format(n))
@@ -895,7 +910,8 @@ class MNP_Hysteresis_Analyzer(MNP_Analyzer):
                     scalar_cmap = 'hsv'
                 if scalar_clim is None:
                     scalar_clim = (0, 6.28)
-                self.xy_scalar_plot(title = title, ax = ax, z_plane = z_plane, figsize = figsize, filename = filename, filetype = filetype,
+                self.xy_scalar_plot(title = title, ax = ax, z_plane = z_plane, figsize = figsize, filename = filename,
+                                    filetype = filetype,
                                     cmap = scalar_cmap, clim = scalar_clim, **kwargs)
             elif type == 'z_scalar':
                 title = 'MNP {} Z Scalar Plot Step {}'.format(self.mnp.id, n)
@@ -903,22 +919,23 @@ class MNP_Hysteresis_Analyzer(MNP_Analyzer):
                 if scalar_cmap is None:
                     scalar_cmap = 'viridis'
                 if scalar_clim is None:
-                    scalar_clim = (-1,1)
-                self.z_scalar_plot(ax = ax, title = title, z_plane = z_plane, figsize = figsize, filename = filename, filetype = filetype,
-                                   cmap = scalar_cmap, scalar_clim=scalar_clim, **kwargs)
+                    scalar_clim = (-1, 1)
+                self.z_scalar_plot(ax = ax, title = title, z_plane = z_plane, figsize = figsize, filename = filename,
+                                   filetype = filetype,
+                                   cmap = scalar_cmap, scalar_clim = scalar_clim, **kwargs)
         print('\r')
 
-    def hyst_movie(self, type = 'z', movie_name=None, name=None, **kwargs):
+    def hyst_movie(self, type='z', movie_name=None, name=None, **kwargs):
         if movie_name is None:
-            movie_name=os.path.join(self.path,'{}_hysteresis.mp4'.format(type))
+            movie_name = os.path.join(self.path, '{}_hysteresis.mp4'.format(type))
         if name is None:
-            if type=='xy':
-                name='xy_hysteresis_plot'
-            elif type=='z':
-                name ='z_hysteresis_plot'
-            elif type=='xy_scalar':
+            if type == 'xy':
+                name = 'xy_hysteresis_plot'
+            elif type == 'z':
+                name = 'z_hysteresis_plot'
+            elif type == 'xy_scalar':
                 name = 'xy_scalar_hysteresis_plot'
-            elif type=='z_scalar':
+            elif type == 'z_scalar':
                 name = 'z_scalar_hysteresis_plot'
         findpath = os.path.join(self.path, name)
         if not os.path.isdir(findpath):
@@ -926,13 +943,13 @@ class MNP_Hysteresis_Analyzer(MNP_Analyzer):
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
         images = []
         for n in range(how_many_m_finals(self.mnp)):
-            if type=='xy':
+            if type == 'xy':
                 images.append(os.path.join(findpath, 'xy_plot_{}.png'.format(n)))
-            if type=='z':
+            if type == 'z':
                 images.append(os.path.join(findpath, 'z_plot_{}.png'.format(n)))
-            if type=='xy_scalar':
+            if type == 'xy_scalar':
                 images.append(os.path.join(findpath, 'xy_scalar_plot_{}.png'.format(n)))
-            if type=='z_scalar':
+            if type == 'z_scalar':
                 images.append(os.path.join(findpath, 'z_scalar_plot_{}.png'.format(n)))
         frame = cv2.imread(images[0])
         height, width, layers = frame.shape
@@ -940,7 +957,7 @@ class MNP_Hysteresis_Analyzer(MNP_Analyzer):
         dim = (int(width), int(height))
         for image in images:
             frame = cv2.imread(image)
-            frame = cv2.resize(frame,dim)
+            frame = cv2.resize(frame, dim)
             video.write(frame)
         cv2.destroyAllWindows()
         video.release()
