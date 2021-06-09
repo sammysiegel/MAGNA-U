@@ -737,11 +737,11 @@ class MNP_Analyzer:
         mz = []
         angle = []
         for point in self.mnp.scaled_coords:
-            x, y, z = point
+            h, j, k = point
             mx.append(self.field.orientation.line(p1 = (point), p2 = (0, 0, 0), n = 2).data.vx[0]),
             my.append(self.field.orientation.line(p1 = (point), p2 = (0, 0, 0), n = 2).data.vy[0]),
             mz.append(self.field.orientation.line(p1 = (point), p2 = (0, 0, 0), n = 2).data.vz[0])
-            angle.append(self.field.plane(z = z).angle.line(p1 = point, p2 = (0, 0, z), n = 2).data.v[0])
+            angle.append(self.field.plane(z = k).angle.line(p1 = point, p2 = (0, 0, k), n = 2).data.v[0])
         table = np.column_stack((x, y, z, mx, my, mz, angle))
         table.tofile(os.path.join(self.mnp.filepath, 'centers_data.csv'), sep = ',')
 

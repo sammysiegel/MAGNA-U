@@ -50,7 +50,7 @@ version using the `load_mnp()` function.
 |[`quick_drive`](Quick_Drive.md)| Easy way to drive an MNP assembly|
 
 ## Changelog
-- Version 2.3.2 and 2.3.3 (8 Jun 2021)
+- Version 2.3.4 (9 Jun 2021)
     - fixed `MNP_Analyzer.extract()` to allow it to extract angle values for centers
         not in the `z = 0` plane
 - Version 2.3.1 (27 May 2021)
