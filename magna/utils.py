@@ -797,9 +797,10 @@ class MNP_Analyzer:
         data = np.genfromtxt(os.path.join(self.mnp.filepath, 'centers_data.csv'), delimiter = ',')
         data = data.reshape(-1, 7)
         center_magnetization = np.column_stack((data[:, 3], data[:, 4], data[:, 5]))
-        data[:, 0] = scale[0] * data[:, 0]
-        data[:, 1] = scale[1] * data[:, 1]
-        data[:, 2] = scale[2] * data[:, 2]
+        origins = self.mnp.coord_list.astype(np.float32)
+        origins[:, 0] *= scale[0]
+        origins[:, 1] *= scale[1]
+        origins[:, 2] *= scale[2]
 
         if color_field == 'z':
             if cmap is None:
@@ -814,7 +815,7 @@ class MNP_Analyzer:
         elif color_field == 'layer':
             print("Getting Layer...")
             if cmap is None:
-                cmap = 'hot'
+                cmap = 'rainbow'
             color_values = data[:, 2]
         else:
             raise AttributeError("color_field should be 'z', 'angle', or 'layer'.")
@@ -833,7 +834,7 @@ class MNP_Analyzer:
 
         plot = k3d.plot()
         plot.display()
-        plot += k3d.vectors(origins = self.mnp.coord_list.astype(np.float32),
+        plot += k3d.vectors(origins = origins,
                             vectors = center_magnetization.astype(np.float32), model_matrix = model_matrix,
                             colors = colors,
                             line_width = .02, head_size = 2, use_head = True)
