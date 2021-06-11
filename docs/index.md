@@ -50,7 +50,10 @@ version using the `load_mnp()` function.
 |[`quick_drive`](Quick_Drive.md)| Easy way to drive an MNP assembly|
 
 ## Changelog
-- Version 2.3.4 (9 Jun 2021)
+- Version 2.4.0 (11 June 2021)
+    - `k3d_center_vectors()`: addition of coloring by layer with `color_field = 'layer'`, 
+      scaling with `scale`, and color mapping with `cmap`.
+- Version 2.3.4 (9 June 2021)
     - fixed `MNP_Analyzer.extract()` to allow it to extract angle values for centers
         not in the `z = 0` plane
 - Version 2.3.1 (27 May 2021)

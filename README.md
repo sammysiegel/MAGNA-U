@@ -1,5 +1,5 @@
 # Magnetic Nanoparticle Assembly Utilities (MAGNA-U)
-#### Version 2.3.3
+#### Version 2.4.0
 
 | Description| Badge|
 | --------|-------|
@@ -387,6 +387,9 @@ colored by either the z component (default) or the xy angle component by using
 will likely take significantly longer than coloring using z.
    
 ### Changelog
+- Version 2.4.0 (11 June 2021)
+    - `k3d_center_vectors()`: addition of coloring by layer with `color_field = 'layer'`, 
+      scaling with `scale`, and color mapping with `cmap`.
 - Version 2.3.4 (9 Jun 2021)
     - fixed `MNP_Analyzer.extract()` to allow it to extract angle values for centers
         not in the `z = 0` plane
