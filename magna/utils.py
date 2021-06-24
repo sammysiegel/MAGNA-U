@@ -15,6 +15,7 @@ import matplotlib.pyplot as plt
 import k3d
 import pandas as pd
 import cv2
+from scipy.spatial.distance import cdist
 
 
 def num_rings(num):
@@ -250,11 +251,13 @@ class MNP(Lattice):
                  layer_radius=3,
                  layer_dims=(3, 10),
                  axes=None,
+                 axes_type = 'random_hexagonal',
                  directory=os.path.join(os.getcwd(), 'MNP_Data'),
                  loaded_fields=''):
         super().__init__(name = name, form = form, shape = shape, n_layers = n_layers, layer_radius = layer_radius,
                          layer_dims = layer_dims)
 
+        self.axes_type = axes_type
         self.coord_list = self.list_coords()
 
         self.dirpath = os.path.join(directory, name)
@@ -291,6 +294,12 @@ class MNP(Lattice):
         self.k_field = None
         self.u_field = None
 
+        self.distance_matrix = None
+        self.is_in_mnp = None
+        self.point_list = None
+        self.n = 0
+
+
         if 'm' in loaded_fields:
             self.m_field = self.load_fields(fields = 'm')[0]
             self.initialized = True
@@ -314,12 +323,24 @@ class MNP(Lattice):
 
     def make_easy_axes(self):
         possible_axes = [(0, 1, 0), (3 ** .5 / 2, .5, 0), (3 ** .5 / 2, -.5, 0)]
-        axes_list = []
-        for _ in self.coord_list:
-            axes_list.append(possible_axes[random.randint(0, 2)])
+        if self.axes_type == 'random_hexagonal':
+            axes_list = [(possible_axes[random.randint(0, 2)]) for _ in range(len(self.coord_list))]
+        elif self.axes_type == 'random_plane':
+            axes_list = [(2*np.random.random()-1, 2*np.random.random()-1, 0) for _ in range(len(self.coord_list))]
+        elif self.axes_type == 'all_random':
+            axes_list = [(2*np.random.random()-1, 2*np.random.random()-1, 2*np.random.random()-1) for _ in range(len(self.coord_list))]
+        else:
+            raise AttributeError("axes_type parameter must be one of 'random_hexagonal', 'random_plane', or 'all_random'.")
         return axes_list
 
+    def find_distances(self):
+        self.point_list = list(self.mesh)
+        self.distance_matrix = cdist(np.array(self.point_list), self.scaled_coords)
+        self.is_in_mnp = np.any(self.distance_matrix < self.r_shell, axis = 1)
+
+
     def if_circle(self, point, r):
+        '''Deprecated'''
         x, y, z = point
         for n in self.coord_list:
             i, j, k = n
@@ -330,30 +351,40 @@ class MNP(Lattice):
             return False
 
     def ms_func(self, point):
-        if self.if_circle(point, self.r_shell) and self.if_circle(point, self.r_core):
-            return self.ms_core  # Fe3O4 Exchange stiffness constant (J/m)
-        elif self.if_circle(point, self.r_shell) and not self.if_circle(point, self.r_core):
-            return self.ms_shell  # MnFe2O4 Exchange stiffness constant (J/m)
-        else:
+        if not self.is_in_mnp[self.n]:
+            self.n += 1
             return 0
+        elif np.any(self.distance_matrix[self.n, :] < self.r_core):
+            self.n += 1
+            return self.ms_core
+        else:
+            self.n += 1
+            return self.ms_shell
 
     def a_func(self, point):
-        if self.if_circle(point, self.r_shell) and self.if_circle(point, self.r_core):
-            return self.a_core  # Fe3O4 Exchange stiffness constant (J/m)
-        elif self.if_circle(point, self.r_shell) and not self.if_circle(point, self.r_core):
-            return self.a_shell  # MnFe2O4 Exchange stiffness constant (J/m)
-        else:
+        if not self.is_in_mnp[self.n]:
+            self.n += 1
             return 0
+        elif np.any(self.distance_matrix[self.n, :] < self.r_core):
+            self.n += 1
+            return self.a_core
+        else:
+            self.n += 1
+            return self.a_shell
 
     def k_func(self, point):
-        if self.if_circle(point, self.r_shell) and self.if_circle(point, self.r_core):
-            return self.k_core  # Fe3O4 Exchange stiffness constant (J/m)
-        elif self.if_circle(point, self.r_shell) and not self.if_circle(point, self.r_core):
-            return self.k_shell  # MnFe2O4 Exchange stiffness constant (J/m)
-        else:
+        if not self.is_in_mnp[self.n]:
+            self.n += 1
             return 0
+        elif np.any(self.distance_matrix[self.n, :] < self.r_core):
+            self.n += 1
+            return self.k_core
+        else:
+            self.n += 1
+            return self.k_shell
 
     def circle_index(self, point, n_list):
+        '''Deprecated'''
         x, y, z = point
         n_list = n_list.tolist()
         for n in n_list:
@@ -363,10 +394,13 @@ class MNP(Lattice):
                 return n_list.index(n)
 
     def u_func(self, point):
-        if not self.if_circle(point, self.r_shell):
+        if not self.is_in_mnp[self.n]:
+            self.n += 1
             return (0, 0, 1)
         else:
-            return self.easy_axes[self.circle_index(point, self.coord_list)]
+            index = np.where(self.distance_matrix[self.n, :] < self.r_shell)[0][0]
+            self.n += 1
+            return self.easy_axes[index]
 
     @property
     def mesh(self):
@@ -384,6 +418,9 @@ class MNP(Lattice):
                 cell = (self.r_total / self.x_divs, self.r_total / self.y_divs, self.r_total / self.z_divs))
 
     def make_m_field(self, m0='random'):
+        if self.distance_matrix is None:
+            self.find_distances()
+        self.n = 0
         if m0 == 'random':
             self.m_field = df.Field(self.mesh, dim = 3,
                                     value = lambda point: [2 * random.random() - 1 for _ in range(3)],
@@ -394,15 +431,26 @@ class MNP(Lattice):
                                     norm = self.ms_func)
 
     def make_a_field(self):
+        if self.distance_matrix is None:
+            self.find_distances()
+        self.n = 0
         self.a_field = df.Field(self.mesh, dim = 1, value = self.a_func)
 
     def make_k_field(self):
+        if self.distance_matrix is None:
+            self.find_distances()
+        self.n = 0
         self.k_field = df.Field(self.mesh, dim = 1, value = self.k_func)
 
     def make_u_field(self):
+        if self.distance_matrix is None:
+            self.find_distances()
+        self.n=0
         self.u_field = df.Field(self.mesh, dim = 3, value = self.u_func)
 
     def initialize(self, fields='maku', autosave=True, m0='random'):
+        if self.distance_matrix is None:
+            self.find_distances()
         if 'm' in fields:
             self.make_m_field(m0 = m0)
         if 'a' in fields:
