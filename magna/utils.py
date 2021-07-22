@@ -1071,8 +1071,8 @@ class MNP_Domain_Analyzer(MNP_Analyzer):
             colors.append((cmap_int[cval],))
 
         origins = self.mnp.coord_list.astype(np.float32)
-        origins[:, 1] = scale[0] * origins[:, 2]
-        origins[:, 1] = scale[1] * origins[:, 2]
+        origins[:, 0] = scale[0] * origins[:, 0]
+        origins[:, 1] = scale[1] * origins[:, 1]
         origins[:, 2] = scale[2] * origins[:, 2]
         plot = k3d.plot()
         plot.display()
@@ -1102,8 +1102,8 @@ class MNP_Domain_Analyzer(MNP_Analyzer):
             colors_2.append(2 * (cmap_int[cval],))
 
         origins = self.mnp.coord_list.astype(np.float32)
-        origins[:, 1] = scale[0] * origins[:, 2]
-        origins[:, 1] = scale[1] * origins[:, 2]
+        origins[:, 0] = scale[0] * origins[:, 0]
+        origins[:, 1] = scale[1] * origins[:, 1]
         origins[:, 2] = scale[2] * origins[:, 2]
 
         model_matrix = [
