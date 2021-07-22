@@ -15,7 +15,6 @@ import matplotlib.pyplot as plt
 import k3d
 import pandas as pd
 import cv2
-from scipy.spatial.distance import cdist
 
 
 def num_rings(num):
@@ -98,15 +97,10 @@ def hexa_packing_coords(layer_spacing=1 / (3 ** .5 * 2 / 3), layer_radius=0, sha
 class Lattice:
     def __init__(self, name='lattice', form='hcp', shape='circle', n_layers=3, layer_radius=0, layer_dims=(0, 0)):
         """name: can be whatever you want
-
            form: the kind of packing; either 'hcp' (default), 'fcc', 'scp' (simple cubic), or 'bcc'
-
            shape: the shape of a layer: either 'circle' (default), 'hexagon', or 'rectangle'
-
            n_layers: the number of layers stacked on top of each other
-
            layer_radius: for hexagon or circle shapes; this is the radius of the circle or circumradius of the hexagon, in # of spheres
-
            layer_dims: for rectangle shape; this is the (x, y) dimensions of a layer as a tuple where x and y are # of spheres"""
         self.name = name
         if form != 'hcp' and form != 'fcc' and form != 'scp' and form != 'bcc':
@@ -251,13 +245,11 @@ class MNP(Lattice):
                  layer_radius=3,
                  layer_dims=(3, 10),
                  axes=None,
-                 axes_type = 'random_hexagonal',
                  directory=os.path.join(os.getcwd(), 'MNP_Data'),
                  loaded_fields=''):
         super().__init__(name = name, form = form, shape = shape, n_layers = n_layers, layer_radius = layer_radius,
                          layer_dims = layer_dims)
 
-        self.axes_type = axes_type
         self.coord_list = self.list_coords()
 
         self.dirpath = os.path.join(directory, name)
@@ -294,12 +286,6 @@ class MNP(Lattice):
         self.k_field = None
         self.u_field = None
 
-        self.distance_matrix = None
-        self.is_in_mnp = None
-        self.point_list = None
-        self.n = 0
-
-
         if 'm' in loaded_fields:
             self.m_field = self.load_fields(fields = 'm')[0]
             self.initialized = True
@@ -323,24 +309,12 @@ class MNP(Lattice):
 
     def make_easy_axes(self):
         possible_axes = [(0, 1, 0), (3 ** .5 / 2, .5, 0), (3 ** .5 / 2, -.5, 0)]
-        if self.axes_type == 'random_hexagonal':
-            axes_list = [(possible_axes[random.randint(0, 2)]) for _ in range(len(self.coord_list))]
-        elif self.axes_type == 'random_plane':
-            axes_list = [(2*np.random.random()-1, 2*np.random.random()-1, 0) for _ in range(len(self.coord_list))]
-        elif self.axes_type == 'all_random':
-            axes_list = [(2*np.random.random()-1, 2*np.random.random()-1, 2*np.random.random()-1) for _ in range(len(self.coord_list))]
-        else:
-            raise AttributeError("axes_type parameter must be one of 'random_hexagonal', 'random_plane', or 'all_random'.")
+        axes_list = []
+        for _ in self.coord_list:
+            axes_list.append(possible_axes[random.randint(0, 2)])
         return axes_list
 
-    def find_distances(self):
-        self.point_list = list(self.mesh)
-        self.distance_matrix = cdist(np.array(self.point_list), self.scaled_coords)
-        self.is_in_mnp = np.any(self.distance_matrix < self.r_shell, axis = 1)
-
-
     def if_circle(self, point, r):
-        '''Deprecated'''
         x, y, z = point
         for n in self.coord_list:
             i, j, k = n
