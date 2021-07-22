@@ -380,26 +380,26 @@ class MNP(Lattice):
 
     def make_m_field(self, m0='random'):
         if m0 == 'random':
-            self.m_field = df.Field(self.mesh, dim = 3,
-                                    value = lambda point: [2 * random.random() - 1 for _ in range(3)],
-                                    norm = self.ms_func)
+            self.m_field = df.Field(self.mesh, dim=3,
+                                    value=lambda point: [2 * random.random() - 1 for _ in range(3)],
+                                    norm=self.ms_func)
         elif type(m0) == type((0, 0, 0)):
-            self.m_field = df.Field(self.mesh, dim = 3,
-                                    value = m0,
-                                    norm = self.ms_func)
+            self.m_field = df.Field(self.mesh, dim=3,
+                                    value=m0,
+                                    norm=self.ms_func)
 
     def make_a_field(self):
-        self.a_field = df.Field(self.mesh, dim = 1, value = self.a_func)
+        self.a_field = df.Field(self.mesh, dim=1, value=self.a_func)
 
     def make_k_field(self):
-        self.k_field = df.Field(self.mesh, dim = 1, value = self.k_func)
+        self.k_field = df.Field(self.mesh, dim=1, value=self.k_func)
 
     def make_u_field(self):
-        self.u_field = df.Field(self.mesh, dim = 3, value = self.u_func)
+        self.u_field = df.Field(self.mesh, dim=3, value=self.u_func)
 
     def initialize(self, fields='maku', autosave=True, m0='random'):
         if 'm' in fields:
-            self.make_m_field(m0 = m0)
+            self.make_m_field(m0=m0)
         if 'a' in fields:
             self.make_a_field()
         if 'k' in fields:
@@ -409,7 +409,7 @@ class MNP(Lattice):
         self.initialized = True
         if autosave:
             save_mnp(self)
-            self.save_fields(fields = fields)
+            self.save_fields(fields=fields)
 
     def maku(self):
         if not self.initialized:
@@ -958,3 +958,211 @@ class MNP_Hysteresis_Analyzer(MNP_Analyzer):
         cv2.destroyAllWindows()
         video.release()
         print('Movie saved to ' + movie_name)
+
+def angle_finder(point):
+    x, y, z = point
+    return [np.math.acos(z / np.math.sqrt(x ** 2 + y ** 2 + z ** 2)) * 180 / np.pi,
+            np.math.atan2(y, x) * 180 / np.pi]
+
+class MNP_Domain_Analyzer(MNP_Analyzer):
+    def __init__(self, mnp, step=0, preload_field=False):
+        super().__init__(mnp, step, preload_field)
+
+        self.region_list = None
+
+    @property
+    def discretized_cmag(self):
+        if not os.path.isfile(os.path.join(self.mnp.filepath, 'centers_data.csv')):
+            self.extract()
+        data = np.genfromtxt(os.path.join(self.mnp.filepath, 'centers_data.csv'), delimiter = ',')
+        data = data.reshape(-1, 7)
+        center_magnetization = np.column_stack((data[:, 3], data[:, 4], data[:, 5]))
+
+        theta_list = []
+        phi_list = []
+        for point in center_magnetization:
+            theta, phi = angle_finder(point)
+            theta_list.append(theta)
+            phi_list.append(phi)
+
+        theta_bins = np.digitize(theta_list, [180 * i / 6 for i in range(1, 7)], right=True)
+        phi_bins = []
+        for i in range(len(phi_list)):
+            z = theta_bins[i]
+            if z == 0 or z == 5:
+                phi_bins.append(np.digitize(phi_list[i] + 180, [180, 360], right=True))
+            if z == 1 or z == 4:
+                phi_bins.append(np.digitize(phi_list[i] + 180, [90, 180, 270, 360], right=True))
+            if z == 2 or z == 3:
+                phi_bins.append(np.digitize(phi_list[i] + 180, [60, 120, 180, 240, 300, 360], right=True))
+
+        region_index_dict = {
+            (2, 0): 1,
+            (2, 1): 2,
+            (2, 2): 3,
+            (2, 3): 4,
+            (2, 4): 5,
+            (2, 5): 6,
+            (3, 0): 7,
+            (3, 1): 8,
+            (3, 2): 9,
+            (3, 3): 10,
+            (3, 4): 11,
+            (3, 5): 12,
+            (1, 0): 13,
+            (1, 1): 14,
+            (1, 2): 15,
+            (1, 3): 16,
+            (4, 0): 17,
+            (4, 1): 18,
+            (4, 2): 19,
+            (4, 3): 20,
+            (0, 0): 21,
+            (0, 1): 22,
+            (5, 0): 23,
+            (5, 1): 24
+        }
+
+        region_indices = []
+        for i in range(len(center_magnetization)):
+            region_indices.append(region_index_dict.get((theta_bins[i], phi_bins[i])))
+
+        return region_indices
+
+    def plot_regions(self, cmap = 'hsv', point_size = .9, scale=(1,1,1)):
+        cmap = cmap
+        color_values = np.array(self.discretized_cmag).astype(float)
+        color_values = dfu.normalise_to_range(color_values, (0, 255))
+        # Generate double pairs (body, head) for colouring vectors.
+        cmap = matplotlib.cm.get_cmap(cmap, 256)
+        cmap_int = []
+        for i in range(cmap.N):
+            rgb = cmap(i)[:3]
+            cmap_int.append(int(matplotlib.colors.rgb2hex(rgb)[1:], 16))
+
+        colors = []
+        for cval in color_values:
+            colors.append((cmap_int[cval],))
+
+        origins = self.mnp.coord_list.astype(np.float32)
+        origins[:, 1] = scale[0] * origins[:, 2]
+        origins[:, 1] = scale[1] * origins[:, 2]
+        origins[:, 2] = scale[2] * origins[:, 2]
+        plot = k3d.plot()
+        plot.display()
+        plot += k3d.points(positions=origins,
+                           colors=colors,
+                           point_size=point_size)
+
+    def plot_regions_vectors(self,cmap = 'hsv', head_size = 2, scale=(1,1,1)):
+        if not os.path.isfile(os.path.join(self.mnp.filepath, 'centers_data.csv')):
+            self.extract()
+        data = np.genfromtxt(os.path.join(self.mnp.filepath, 'centers_data.csv'), delimiter = ',')
+        data = data.reshape(-1, 7)
+        center_magnetization = np.column_stack((data[:, 3], data[:, 4], data[:, 5]))
+
+        cmap = cmap
+        color_values = np.array(self.discretized_cmag).astype(float)
+        color_values = dfu.normalise_to_range(color_values, (0, 255))
+        # Generate double pairs (body, head) for colouring vectors.
+        cmap = matplotlib.cm.get_cmap(cmap, 256)
+        cmap_int = []
+        for i in range(cmap.N):
+            rgb = cmap(i)[:3]
+            cmap_int.append(int(matplotlib.colors.rgb2hex(rgb)[1:], 16))
+
+        colors_2 = []
+        for cval in color_values:
+            colors_2.append(2 * (cmap_int[cval],))
+
+        origins = self.mnp.coord_list.astype(np.float32)
+        origins[:, 1] = scale[0] * origins[:, 2]
+        origins[:, 1] = scale[1] * origins[:, 2]
+        origins[:, 2] = scale[2] * origins[:, 2]
+
+        model_matrix = [
+            7.0, 5.0, -5.0, 0.0,
+            0.0, 7.0, 7.0, 5.0,
+            7.0, -5.0, 5.0, 0.0,
+            0.0, 0.0, 0.0, 1.0
+        ]
+
+        plot = k3d.plot()
+        plot.display()
+        plot += k3d.vectors(origins=origins,
+                            vectors=center_magnetization.astype(np.float32), model_matrix=model_matrix,
+                            colors=colors_2,
+                            line_width=.02, head_size=head_size, use_head=True)
+
+    def find_regions(self):
+        region_indices = self.discretized_cmag
+        def neighbor_checker(i, used, matches):
+            for j in range(len(self.mnp.coord_list)):
+                if j not in used:
+                    r = self.mnp.coord_list[i] - self.mnp.coord_list[j]
+                    if 0 < (r[0] ** 2 + r[1] ** 2 + r[2] ** 2) < 1.0001:
+                        if region_indices[i] == region_indices[j]:
+                            if j not in matches:
+                                matches.append(j)
+            used.append(i)
+
+        def region_finder(n):
+            used = []
+            matches = [n]
+            for m in matches:
+                neighbor_checker(m, used, matches)
+            return len(used)
+
+        def clump_lister():
+            clumps = []
+            for i in range(len(self.mnp.coord_list)):
+                clumps.append(region_finder(i))
+            clump_list = []
+            for i in clumps:
+                num = clumps.count(i) // i
+                if i not in clump_list:
+                    for _ in range(num):
+                        clump_list.append(i)
+            return clump_list
+
+        self.region_list = clump_lister()
+
+    @property
+    def characteristic_size(self):
+        n = 0
+        for i in self.region_list:
+            n += i * (i)
+        return (n/len(self.mnp.coord_list))
+
+    @property
+    def domains_summary(self):
+        csize = self.characteristic_size
+
+        return (('###             MNP {} Domain Summary                       \n'
+                 '|                Property                |   Value    |\n'
+                 '| -------------------------------------- | ---------- |\n'
+                 '| ID                                     | {:<10} |\n'
+                 '| Number of MNPs                         | {:<10} |\n'
+                 '| Number of Regions                      | {:<10} |\n'
+                 '| Characteristic Domain Size             | {:<10} |\n'
+                 '| Max Domain Size                        | {:<10} |\n'
+                 '| Average Domain Size                    | {:<10} |\n'
+                 '\n'
+                 'Domain Size List: {}').format(self.mnp.id, self.mnp.id, len(self.mnp.coord_list),
+                                              len(self.region_list), csize,
+                                              max(self.region_list), np.mean(self.region_list), self.region_list))
+
+    def save_domains(self):
+        data_list = [self.mnp.id, len(self.mnp.coord_list),
+                     len(self.region_list), self.characteristic_size,
+                     max(self.region_list), np.mean(self.region_list), self.region_list]
+        with open(os.path.join(self.mnp.filepath, 'domain_data_mnp_{}.csv'.format(self.mnp.id)), 'w') as f:
+            write = csv.writer(f)
+            write.writerow(data_list)
+
+        with open(os.path.join(self.mnp.filepath, 'domain_summary_mnp_{}.md'.format(self.mnp.id)), 'w') as f:
+            f.write(self.domains_summary)
+        print('MNP Summary Saved: ', os.path.join(self.mnp.filepath, 'summary_mnp_{}.md'.format(self.mnp.id)))
+
+
+
