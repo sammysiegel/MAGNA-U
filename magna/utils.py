@@ -98,15 +98,10 @@ def hexa_packing_coords(layer_spacing=1 / (3 ** .5 * 2 / 3), layer_radius=0, sha
 class Lattice:
     def __init__(self, name='lattice', form='hcp', shape='circle', n_layers=3, layer_radius=0, layer_dims=(0, 0)):
         """name: can be whatever you want
-
            form: the kind of packing; either 'hcp' (default), 'fcc', 'scp' (simple cubic), or 'bcc'
-
            shape: the shape of a layer: either 'circle' (default), 'hexagon', or 'rectangle'
-
            n_layers: the number of layers stacked on top of each other
-
            layer_radius: for hexagon or circle shapes; this is the radius of the circle or circumradius of the hexagon, in # of spheres
-
            layer_dims: for rectangle shape; this is the (x, y) dimensions of a layer as a tuple where x and y are # of spheres"""
         self.name = name
         if form != 'hcp' and form != 'fcc' and form != 'scp' and form != 'bcc':
@@ -1189,6 +1184,4 @@ class MNP_Domain_Analyzer(MNP_Analyzer):
         with open(os.path.join(self.mnp.filepath, 'domain_summary_mnp_{}.md'.format(self.mnp.id)), 'w') as f:
             f.write(self.domains_summary)
         print('MNP Summary Saved: ', os.path.join(self.mnp.filepath, 'summary_mnp_{}.md'.format(self.mnp.id)))
-
-
 
