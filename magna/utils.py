@@ -16,6 +16,7 @@ import k3d
 import pandas as pd
 import cv2
 from scipy.spatial.distance import cdist
+import networkx as nx
 
 
 def num_rings(num):
@@ -1117,21 +1118,27 @@ class MNP_Domain_Analyzer(MNP_Analyzer):
 
     def find_regions(self):
         region_indices = self.discretized_cmag
-        def neighbor_checker(i, used, matches):
+        G = nx.Graph()
+        for i in range(len(self.mnp.coord_list)):
+            G.add_node(i)
+        for i in range(len(self.mnp.coord_list)):
             for j in range(len(self.mnp.coord_list)):
-                if j not in used:
-                    r = self.mnp.coord_list[i] - self.mnp.coord_list[j]
-                    if 0 < (r[0] ** 2 + r[1] ** 2 + r[2] ** 2) < 1.0001:
-                        if region_indices[i] == region_indices[j]:
-                            if j not in matches:
-                                matches.append(j)
+                r = self.mnp.coord_list[i] - self.mnp.coord_list[j]
+                if 0 < (r[0] ** 2 + r[1] ** 2 + r[2] ** 2) < 1.0001:
+                    G.add_edge(i, j)
+
+        def neighbor_network_checker(i, used, matches):
+            for j in G.adj[i]:
+                if region_indices[i] == region_indices[j]:
+                    if j not in matches:
+                        matches.append(j)
             used.append(i)
 
         def region_finder(n):
             used = []
             matches = [n]
             for m in matches:
-                neighbor_checker(m, used, matches)
+                neighbor_network_checker(m, used, matches)
             return len(used)
 
         def clump_lister():

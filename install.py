@@ -33,3 +33,12 @@ except ModuleNotFoundError:
     if answer == 'y':
         os.system('pip install opencv-python')
 
+try:
+    import networkx
+except ModuleNotFoundError:
+    print('\033[0;33;40mWARNING: MAGNA-U has detected that the python module NetworkX is not installed. This is needed'
+          ' in order to find the domains of MNP assemblies.')
+    answer = input('Would you like to install NetworkX now? [y/n]\033[0;0m')
+    if answer == 'y':
+        os.system('pip install networkx')
+
