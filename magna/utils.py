@@ -1163,6 +1163,10 @@ class MNP_Domain_Analyzer(MNP_Analyzer):
         return (n/len(self.mnp.coord_list))
 
     @property
+    def free_particle_fraction(self):
+        return self.region_list.count(1)/len(self.mnp.coord_list)
+
+    @property
     def domains_summary(self):
         csize = self.characteristic_size
 
@@ -1175,15 +1179,17 @@ class MNP_Domain_Analyzer(MNP_Analyzer):
                  '| Characteristic Domain Size             | {:<10} |\n'
                  '| Max Domain Size                        | {:<10} |\n'
                  '| Average Domain Size                    | {:<10} |\n'
+                 '| Free Particle Fraction                 | {:<10} |\n'
                  '\n'
                  'Domain Size List: {}').format(self.mnp.id, self.mnp.id, len(self.mnp.coord_list),
                                               len(self.region_list), csize,
-                                              max(self.region_list), np.mean(self.region_list), self.region_list))
+                                              max(self.region_list), np.mean(self.region_list),
+                                              self. free_particle_fraction,self.region_list))
 
     def save_domains(self):
         data_list = [self.mnp.id, len(self.mnp.coord_list),
                      len(self.region_list), self.characteristic_size,
-                     max(self.region_list), np.mean(self.region_list), self.region_list]
+                     max(self.region_list), np.mean(self.region_list), self.region_list, self.free_particle_fraction]
         with open(os.path.join(self.mnp.filepath, 'domain_data_mnp_{}.csv'.format(self.mnp.id)), 'w') as f:
             write = csv.writer(f)
             write.writerow(data_list)
