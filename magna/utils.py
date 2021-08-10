@@ -1198,3 +1198,31 @@ class MNP_Domain_Analyzer(MNP_Analyzer):
             f.write(self.domains_summary)
         print('MNP Summary Saved: ', os.path.join(self.mnp.filepath, 'summary_mnp_{}.md'.format(self.mnp.id)))
 
+def extract_domain_csv(name, filepath='./MNP_Data', filename='domain_data.csv', mode='w', B=0.001):
+    with open(filename, mode) as f:
+        write = csv.writer(f)
+        write.writerow(
+            ['MNP Id', 'B (T)', 'Ms_core (A/m)', 'A_core (J/m)', 'K_core (J/m^3)', 'Axes type', 'Characteristic Size',
+             'Max Size'])
+        for i in range(27):
+            B = B
+            mnp = load_mnp(i, name=name, filepath=filepath)
+            with open(os.path.join(mnp.filepath, 'domain_data_mnp_{}.csv'.format(mnp.id)), 'r') as r:
+                csv_reader = list(csv.reader(r))
+                domain_data = []
+                for q in csv_reader:
+                    for j in q:
+                        domain_data.append(j)
+            csize = domain_data[3]
+            maxsize = domain_data[4]
+            m = mnp.ms_core
+            a = mnp.a_core
+            k = mnp.k_core
+            if i // 9 == 0:
+                axes = 'all_random'
+            elif i // 9 == 1:
+                axes = 'random_plane'
+            elif i // 9 == 2:
+                axes = 'random_hexagonal'
+            data_list = [mnp.id, B, m, a, k, axes, csize, maxsize]
+            write.writerow(data_list)
