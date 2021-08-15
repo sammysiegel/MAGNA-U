@@ -1,5 +1,5 @@
 # Magnetic Nanoparticle Assembly Utilities (MAGNA-U)
-#### Version 2.4.0
+#### Version 2.5.0
 
 | Description| Badge|
 | --------|-------|
@@ -387,6 +387,15 @@ colored by either the z component (default) or the xy angle component by using
 will likely take significantly longer than coloring using z.
    
 ### Changelog
+- Version 2.5.0 (15 Aug 2021)
+    - reverted back to original distance finding method from cdist
+    - added MNP_Domain_Analyzer
+         - now using networks to find domain regions
+         - metrics: characteristic size, max size, mean size, free particle fraction
+         - region plots: as spheres or vectors
+         - saving domain region data/getting summary data
+    - added choice of easy axes with axes_type:'random_hexagonal', 'random_plane', 'all_random'
+    - extract_domain_csv, to return domain data from several mnps as one csv
 - Version 2.4.0 (11 June 2021)
     - `k3d_center_vectors()`: addition of coloring by layer with `color_field = 'layer'`, 
       scaling with `scale`, and color mapping with `cmap`.

@@ -91,7 +91,7 @@ def hexa_packing_coords(layer_spacing=1 / (3 ** .5 * 2 / 3), layer_radius=0, sha
                     if (2 * x + y % 2) ** 2 + ((3 ** .5) * (y / 3)) ** 2 <= layer_radius ** 2:
                         coords.append([(2 * x + (y) % 2) * layer_spacing, (3 ** .5) * (y / 3) * layer_spacing])
                 if shape == 'hexagon':
-                    coords = gen_coords(length = 1, num = num_points(layer_radius)).reshape(-1, 2)
+                    coords = gen_coords(length=1, num=num_points(layer_radius)).reshape(-1, 2)
                     coords = coords.dot([[0, -1], [1, 0]])  # 90° rotation to make it compatible with circle/rect coords
     return np.array(coords)
 
@@ -130,8 +130,8 @@ class Lattice:
 
     def layer_coords(self, layer, z=False):
         if self.form == 'hcp' or 'fcc':
-            coords = hexa_packing_coords(layer_radius = self.layer_radius, layer_dims = self.layer_dims,
-                                         shape = self.shape)
+            coords = hexa_packing_coords(layer_radius=self.layer_radius, layer_dims=self.layer_dims,
+                                         shape=self.shape)
             if not z:
                 if self.form == 'hcp':
                     if layer % 2 == 0:
@@ -177,8 +177,8 @@ class Lattice:
                             len(coords[:, 0]), 1)
                         return np.append(coords, z2, 1)
         if self.form == 'scp' or 'bcc':
-            coords = cubic_packing_coords(layer_radius = self.layer_radius, layer_dims = self.layer_dims,
-                                          shape = self.shape)
+            coords = cubic_packing_coords(layer_radius=self.layer_radius, layer_dims=self.layer_dims,
+                                          shape=self.shape)
             if not z:
                 if self.form == 'scp':
                     return coords
@@ -208,34 +208,34 @@ class Lattice:
         ax = fig.add_subplot(111)
         for layer in range(self.n_layers):
             plt.scatter(self.layer_coords(layer)[:, 0], self.layer_coords(layer)[:, 1])
-        ax.set_aspect(1.0, adjustable = 'box')
+        ax.set_aspect(1.0, adjustable='box')
         plt.show()
 
     def k3d(self, point_size=.8, color=True):
         '''makes a 3d plot of the lattice using k3d visualization'''
         import k3d
-        plot = k3d.plot(name = 'lattice_plot')
+        plot = k3d.plot(name='lattice_plot')
         if not color:
             for layer in range(self.n_layers):
-                plot += k3d.points(positions = self.layer_coords(layer, z = True), point_size = point_size)
+                plot += k3d.points(positions=self.layer_coords(layer, z=True), point_size=point_size)
         if color:
             color_list = [0x0054a7, 0xe41134, 0x75ac4f, 0xf4ea19, 0xffaff8, 0xa35112, 0x15e3f4, 0xcfc7ff]
             for layer in range(self.n_layers):
-                plot += k3d.points(positions = self.layer_coords(layer, z = True), point_size = point_size,
-                                   color = color_list[layer % 8])
+                plot += k3d.points(positions=self.layer_coords(layer, z=True), point_size=point_size,
+                                   color=color_list[layer % 8])
         plot.display()
 
     def list_coords(self):
         '''returns a -1x3 numpy array with the list of all of the coordinates of sphere centers in the lattice'''
         all_coords = np.empty((0, 0))
         for layer in range(self.n_layers):
-            all_coords = np.append(all_coords, self.layer_coords(layer, z = True))
+            all_coords = np.append(all_coords, self.layer_coords(layer, z=True))
         return all_coords.reshape(-1, 3)
 
 
 class MNP(Lattice):
     def __init__(self, id,
-                 r_tuple=(3.5e-9, 3.5e-9, 3e-9),
+                 r_tuple=(4e-9, 3.5e-9, 3e-9),
                  discretizations=(4, 4, 4),
                  ms_tuple=(2.4e5, 3.9e5),
                  a_tuple=(5e-12, 9e-12),
@@ -247,11 +247,11 @@ class MNP(Lattice):
                  layer_radius=3,
                  layer_dims=(3, 10),
                  axes=None,
-                 axes_type = 'random_hexagonal',
+                 axes_type='random_hexagonal',
                  directory=os.path.join(os.getcwd(), 'MNP_Data'),
                  loaded_fields=''):
-        super().__init__(name = name, form = form, shape = shape, n_layers = n_layers, layer_radius = layer_radius,
-                         layer_dims = layer_dims)
+        super().__init__(name=name, form=form, shape=shape, n_layers=n_layers, layer_radius=layer_radius,
+                         layer_dims=layer_dims)
 
         self.axes_type = axes_type
         self.coord_list = self.list_coords()
@@ -295,18 +295,17 @@ class MNP(Lattice):
         self.point_list = None
         self.n = 0
 
-
         if 'm' in loaded_fields:
-            self.m_field = self.load_fields(fields = 'm')[0]
+            self.m_field = self.load_fields(fields='m')[0]
             self.initialized = True
         if 'a' in loaded_fields:
-            self.a_field = self.load_fields(fields = 'a')[0]
+            self.a_field = self.load_fields(fields='a')[0]
             self.initialized = True
         if 'k' in loaded_fields:
-            self.k_field = self.load_fields(fields = 'k')[0]
+            self.k_field = self.load_fields(fields='k')[0]
             self.initialized = True
         if 'u' in loaded_fields:
-            self.u_field = self.load_fields(fields = 'u')[0]
+            self.u_field = self.load_fields(fields='u')[0]
             self.initialized = True
 
     @property
@@ -322,18 +321,20 @@ class MNP(Lattice):
         if self.axes_type == 'random_hexagonal':
             axes_list = [(possible_axes[random.randint(0, 2)]) for _ in range(len(self.coord_list))]
         elif self.axes_type == 'random_plane':
-            axes_list = [(2*np.random.random()-1, 2*np.random.random()-1, 0) for _ in range(len(self.coord_list))]
+            axes_list = [(2 * np.random.random() - 1, 2 * np.random.random() - 1, 0) for _ in
+                         range(len(self.coord_list))]
         elif self.axes_type == 'all_random':
-            axes_list = [(2*np.random.random()-1, 2*np.random.random()-1, 2*np.random.random()-1) for _ in range(len(self.coord_list))]
+            axes_list = [(2 * np.random.random() - 1, 2 * np.random.random() - 1, 2 * np.random.random() - 1) for _ in
+                         range(len(self.coord_list))]
         else:
-            raise AttributeError("axes_type parameter must be one of 'random_hexagonal', 'random_plane', or 'all_random'.")
+            raise AttributeError(
+                "axes_type parameter must be one of 'random_hexagonal', 'random_plane', or 'all_random'.")
         return axes_list
 
     def find_distances(self):
         self.point_list = list(self.mesh)
         self.distance_matrix = cdist(np.array(self.point_list), self.scaled_coords)
-        self.is_in_mnp = np.any(self.distance_matrix < self.r_shell, axis = 1)
-
+        self.is_in_mnp = np.any(self.distance_matrix < self.r_shell, axis=1)
 
     def if_circle(self, point, r):
         '''Deprecated'''
@@ -389,16 +390,16 @@ class MNP(Lattice):
     def mesh(self):
         if self.shape != 'rectangle':
             return df.Mesh(
-                p1 = (-2 * self.layer_radius * self.r_total, -2 * self.layer_radius * self.r_total, -self.r_total),
-                p2 = (2 * self.layer_radius * self.r_total, 2 * self.layer_radius * self.r_total,
-                      2 * self.n_layers * self.r_total),
-                cell = (self.r_total / self.x_divs, self.r_total / self.y_divs, self.r_total / self.z_divs))
+                p1=(-2 * self.layer_radius * self.r_total, -2 * self.layer_radius * self.r_total, -self.r_total),
+                p2=(2 * self.layer_radius * self.r_total, 2 * self.layer_radius * self.r_total,
+                    2 * self.n_layers * self.r_total),
+                cell=(self.r_total / self.x_divs, self.r_total / self.y_divs, self.r_total / self.z_divs))
         elif self.shape == 'rectangle':
             return df.Mesh(
-                p1 = (-self.r_total, -self.r_total, -self.r_total),
-                p2 = (4 * self.layer_dims[0] * self.r_total, self.layer_dims[1] * self.r_total + self.r_total,
-                      2 * self.n_layers * self.r_total),
-                cell = (self.r_total / self.x_divs, self.r_total / self.y_divs, self.r_total / self.z_divs))
+                p1=(-self.r_total, -self.r_total, -self.r_total),
+                p2=(4 * self.layer_dims[0] * self.r_total, self.layer_dims[1] * self.r_total + self.r_total,
+                    2 * self.n_layers * self.r_total),
+                cell=(self.r_total / self.x_divs, self.r_total / self.y_divs, self.r_total / self.z_divs))
 
     def make_m_field(self, m0='random'):
         if m0 == 'random':
@@ -440,7 +441,7 @@ class MNP(Lattice):
 
     def save_fields(self, filepath='default', fields='maku'):
         if not self.initialized:
-            self.initialize(fields = fields)
+            self.initialize(fields=fields)
         if filepath == 'default':
             path = self.filepath
         else:
@@ -549,34 +550,34 @@ def load_mnp(id, name='lattice', filepath='./MNP_Data', fields=''):
         for i in csv_reader:
             for j in i:
                 mnp_data.append(j)
-        return MNP(id, r_tuple = make_list(mnp_data[1]), discretizations = make_list(mnp_data[2]),
-                   ms_tuple = make_list(mnp_data[3]),
-                   a_tuple = make_list(mnp_data[4]), k_tuple = make_list(mnp_data[5]), name = str(mnp_data[6]),
-                   form = str(mnp_data[7]),
-                   shape = str(mnp_data[8]), n_layers = int(mnp_data[9]), layer_radius = int(mnp_data[10]),
-                   layer_dims = make_list(mnp_data[12]), axes = make_list(mnp_data[11]), directory = filepath,
-                   loaded_fields = fields)
+        return MNP(id, r_tuple=make_list(mnp_data[1]), discretizations=make_list(mnp_data[2]),
+                   ms_tuple=make_list(mnp_data[3]),
+                   a_tuple=make_list(mnp_data[4]), k_tuple=make_list(mnp_data[5]), name=str(mnp_data[6]),
+                   form=str(mnp_data[7]),
+                   shape=str(mnp_data[8]), n_layers=int(mnp_data[9]), layer_radius=int(mnp_data[10]),
+                   layer_dims=make_list(mnp_data[12]), axes=make_list(mnp_data[11]), directory=filepath,
+                   loaded_fields=fields)
 
 
 class MNP_System(mm.System):
     def __init__(self, mnp, **kwargs):
-        super().__init__(name = 'DELETE', **kwargs)
+        super().__init__(name='DELETE', **kwargs)
         self.mnp = mnp
 
     def initialize(self, m0='random', Demag=True, Exchange=True, UniaxialAnisotropy=True, Zeeman=True,
                    H=(0, 0, .1 / mm.consts.mu0)):
         if not self.mnp.initialized:
-            self.mnp.initialize(m0 = m0)
+            self.mnp.initialize(m0=m0)
         self.m = self.mnp.m_field
         self.energy = 0
         if Demag:
             self.energy += mm.Demag()
         if Exchange:
-            self.energy += mm.Exchange(A = self.mnp.a_field)
+            self.energy += mm.Exchange(A=self.mnp.a_field)
         if UniaxialAnisotropy:
-            self.energy += mm.UniaxialAnisotropy(K = self.mnp.k_field, u = self.mnp.u_field)
+            self.energy += mm.UniaxialAnisotropy(K=self.mnp.k_field, u=self.mnp.u_field)
         if Zeeman:
-            self.energy += mm.Zeeman(H = H)
+            self.energy += mm.Zeeman(H=H)
 
 
 def how_many_m_finals(mnp):
@@ -599,15 +600,15 @@ class MNP_MinDriver(mc.MinDriver):
         system = MNP_System(mnp)
         system.initialize()
         self.drive(system, **kwargs)
-        mnp.save_any_field(system.m, field_name = 'm_final_{}'.format(how_many_m_finals(mnp)), filepath = drivepath)
+        mnp.save_any_field(system.m, field_name='m_final_{}'.format(how_many_m_finals(mnp)), filepath=drivepath)
 
     def drive_system(self, system, **kwargs):
         drivepath = os.path.join(system.mnp.filepath, 'drives')
         if not os.path.isdir(drivepath):
             os.mkdir(drivepath)
         self.drive(system, **kwargs)
-        system.mnp.save_any_field(system.m, field_name = 'm_final_{}'.format(how_many_m_finals(system.mnp)),
-                                  filepath = drivepath)
+        system.mnp.save_any_field(system.m, field_name='m_final_{}'.format(how_many_m_finals(system.mnp)),
+                                  filepath=drivepath)
 
 
 def make_h_list(Hmin, Hmax, n):
@@ -627,17 +628,17 @@ class MNP_HysteresisDriver(mc.HysteresisDriver):
         drivepath = os.path.join(mnp.filepath, 'drives')
         if not os.path.isdir(drivepath):
             os.mkdir(drivepath)
-        system = mm.System(name = 'DELETE')
+        system = mm.System(name='DELETE')
         M, A, K, U = mnp.maku()
         system.m = M
         data_rows = []
         h_list = make_h_list(Hmin, Hmax, n)
         stage = 0
         for h in h_list:
-            system.energy = mm.Demag() + mm.Exchange(A = A) + mm.UniaxialAnisotropy(K = K, u = U) + mm.Zeeman(H = h)
+            system.energy = mm.Demag() + mm.Exchange(A=A) + mm.UniaxialAnisotropy(K=K, u=U) + mm.Zeeman(H=h)
             md = mc.MinDriver()
             md.drive(system, **kwargs)
-            mnp.save_any_field(system.m, field_name = 'm_final_{}'.format(how_many_m_finals(mnp)), filepath = drivepath)
+            mnp.save_any_field(system.m, field_name='m_final_{}'.format(how_many_m_finals(mnp)), filepath=drivepath)
             system.table.data['stage'] = stage
             stage += 1
             system.table.data['B'] = np.linalg.norm(h) * mm.consts.mu0
@@ -666,7 +667,7 @@ class MNP_Analyzer:
                 self.field = self.mnp.load_any_field('m_final')
             else:
                 self.field = self.mnp.load_any_field('m_final_{}'.format(step),
-                                                     filepath = os.path.join(self.mnp.filepath, 'drives'))
+                                                     filepath=os.path.join(self.mnp.filepath, 'drives'))
 
     def xy_plot(self, ax=None, title=None, z_plane=0, figsize=(50, 50), filename=None, filetype=None,
                 scalar_cmap='hsv', vector_cmap='binary', scalar_clim=(0, 6.28), **kwargs):
@@ -678,18 +679,18 @@ class MNP_Analyzer:
         if title is None:
             title = 'MNP {} XY Plot'.format(self.mnp.id)
         if ax is None:
-            fig = plt.figure(figsize = figsize)
+            fig = plt.figure(figsize=figsize)
             ax = fig.add_subplot(111)
 
             ax.set_title(title)
-        self.field.orientation.plane(z = z_plane).mpl(ax = ax, figsize = figsize,
-                                                      scalar_field = self.field.orientation.plane(z = z_plane).angle,
-                                                      vector_color_field = self.field.orientation.z,
-                                                      vector_color = True,
-                                                      vector_colorbar = True, scalar_cmap = scalar_cmap,
-                                                      vector_cmap = vector_cmap,
-                                                      scalar_clim = scalar_clim,
-                                                      filename = filename, **kwargs)
+        self.field.orientation.plane(z=z_plane).mpl(ax=ax, figsize=figsize,
+                                                    scalar_field=self.field.orientation.plane(z=z_plane).angle,
+                                                    vector_color_field=self.field.orientation.z,
+                                                    vector_color=True,
+                                                    vector_colorbar=True, scalar_cmap=scalar_cmap,
+                                                    vector_cmap=vector_cmap,
+                                                    scalar_clim=scalar_clim,
+                                                    filename=filename, **kwargs)
 
     def z_plot(self, ax=None, title=None, z_plane=0, figsize=(50, 50), filename=None, filetype=None,
                scalar_cmap='viridis', **kwargs):
@@ -701,12 +702,12 @@ class MNP_Analyzer:
         if title is None:
             title = 'MNP {} Z Plot'.format(self.mnp.id)
         if ax is None:
-            fig = plt.figure(figsize = figsize)
+            fig = plt.figure(figsize=figsize)
             ax = fig.add_subplot(111)
 
             ax.set_title(title)
-        self.field.orientation.plane(z = z_plane).mpl(ax = ax, figsize = figsize,
-                                                      filename = filename, scalar_cmap = scalar_cmap, **kwargs)
+        self.field.orientation.plane(z=z_plane).mpl(ax=ax, figsize=figsize,
+                                                    filename=filename, scalar_cmap=scalar_cmap, **kwargs)
 
     def xy_scalar_plot(self, ax=None, title=None, z_plane=0, figsize=(40, 10), filename=None, filetype=None,
                        cmap='hsv', clim=(0, 6.28), **kwargs):
@@ -718,14 +719,14 @@ class MNP_Analyzer:
         if title is None:
             title = 'MNP {} XY Scalar Plot'.format(self.mnp.id)
         if ax is None:
-            fig = plt.figure(figsize = figsize)
+            fig = plt.figure(figsize=figsize)
             ax = fig.add_subplot(111)
 
             ax.set_title(title)
-        self.field.orientation.plane(z = z_plane).angle.mpl_scalar(ax = ax,
-                                                                   filename = filename,
-                                                                   figsize = figsize, filter_field = self.field.x,
-                                                                   cmap = cmap, clim = clim, **kwargs)
+        self.field.orientation.plane(z=z_plane).angle.mpl_scalar(ax=ax,
+                                                                 filename=filename,
+                                                                 figsize=figsize, filter_field=self.field.x,
+                                                                 cmap=cmap, clim=clim, **kwargs)
 
     def z_scalar_plot(self, ax=None, title=None, z_plane=0, figsize=(40, 10), filename=None, filetype=None,
                       cmap='viridis', **kwargs):
@@ -737,14 +738,14 @@ class MNP_Analyzer:
         if title is None:
             title = 'MNP {} Z Scalar Plot'.format(self.mnp.id)
         if ax is None:
-            fig = plt.figure(figsize = figsize)
+            fig = plt.figure(figsize=figsize)
             ax = fig.add_subplot(111)
 
             ax.set_title(title)
-        self.field.orientation.plane(z = z_plane).z.mpl_scalar(ax = ax,
-                                                               filename = filename,
-                                                               figsize = figsize, filter_field = self.field.x,
-                                                               cmap = cmap, **kwargs)
+        self.field.orientation.plane(z=z_plane).z.mpl_scalar(ax=ax,
+                                                             filename=filename,
+                                                             figsize=figsize, filter_field=self.field.x,
+                                                             cmap=cmap, **kwargs)
 
     def extract(self):
         print("Extracting center magnetization values...")
@@ -755,19 +756,19 @@ class MNP_Analyzer:
         angle = []
         for point in self.mnp.scaled_coords:
             h, j, k = point
-            mx.append(self.field.orientation.line(p1 = (point), p2 = (0, 0, 0), n = 2).data.vx[0]),
-            my.append(self.field.orientation.line(p1 = (point), p2 = (0, 0, 0), n = 2).data.vy[0]),
-            mz.append(self.field.orientation.line(p1 = (point), p2 = (0, 0, 0), n = 2).data.vz[0])
-            angle.append(self.field.plane(z = k).angle.line(p1 = point, p2 = (0, 0, k), n = 2).data.v[0])
+            mx.append(self.field.orientation.line(p1=(point), p2=(0, 0, 0), n=2).data.vx[0]),
+            my.append(self.field.orientation.line(p1=(point), p2=(0, 0, 0), n=2).data.vy[0]),
+            mz.append(self.field.orientation.line(p1=(point), p2=(0, 0, 0), n=2).data.vz[0])
+            angle.append(self.field.plane(z=k).angle.line(p1=point, p2=(0, 0, k), n=2).data.v[0])
         table = np.column_stack((x, y, z, mx, my, mz, angle))
-        table.tofile(os.path.join(self.mnp.filepath, 'centers_data.csv'), sep = ',')
+        table.tofile(os.path.join(self.mnp.filepath, 'centers_data.csv'), sep=',')
 
     def mpl_center_vectors(self, color_field='z', ax=None, title=None, x_label=None, y_label=None, figsize=None,
                            filename=None,
                            filetype=None, **kwargs):
         if not os.path.isfile(os.path.join(self.mnp.filepath, 'centers_data.csv')):
             self.extract()
-        data = np.genfromtxt(os.path.join(self.mnp.filepath, 'centers_data.csv'), delimiter = ',')
+        data = np.genfromtxt(os.path.join(self.mnp.filepath, 'centers_data.csv'), delimiter=',')
         data = data.reshape(-1, 7)
 
         if figsize is None:
@@ -789,16 +790,16 @@ class MNP_Analyzer:
         if y_label is None:
             y_label = 'y'
         if ax is None:
-            plt.figure(figsize = figsize)
+            plt.figure(figsize=figsize)
             plt.xlabel(x_label)
             plt.ylabel(y_label)
             plt.title(title)
 
         if color_field == 'z':
-            plt.quiver(data[:, 0], data[:, 1], data[:, 3], data[:, 4], data[:, 5], cmap = 'viridis')
+            plt.quiver(data[:, 0], data[:, 1], data[:, 3], data[:, 4], data[:, 5], cmap='viridis')
         elif color_field == 'angle':
-            plt.quiver(data[:, 0], data[:, 1], data[:, 3], data[:, 4], data[:, 6], cmap = 'hsv')
-        plt.savefig(fname = filename)
+            plt.quiver(data[:, 0], data[:, 1], data[:, 3], data[:, 4], data[:, 6], cmap='hsv')
+        plt.savefig(fname=filename)
 
     def k3d_center_vectors(self, color_field='z', cmap=None, scale=None):
         if scale is None:
@@ -811,7 +812,7 @@ class MNP_Analyzer:
         ]
         if not os.path.isfile(os.path.join(self.mnp.filepath, 'centers_data.csv')):
             self.extract()
-        data = np.genfromtxt(os.path.join(self.mnp.filepath, 'centers_data.csv'), delimiter = ',')
+        data = np.genfromtxt(os.path.join(self.mnp.filepath, 'centers_data.csv'), delimiter=',')
         data = data.reshape(-1, 7)
         center_magnetization = np.column_stack((data[:, 3], data[:, 4], data[:, 5]))
         origins = self.mnp.coord_list.astype(np.float32)
@@ -851,10 +852,10 @@ class MNP_Analyzer:
 
         plot = k3d.plot()
         plot.display()
-        plot += k3d.vectors(origins = origins,
-                            vectors = center_magnetization.astype(np.float32), model_matrix = model_matrix,
-                            colors = colors,
-                            line_width = .02, head_size = 2, use_head = True)
+        plot += k3d.vectors(origins=origins,
+                            vectors=center_magnetization.astype(np.float32), model_matrix=model_matrix,
+                            colors=colors,
+                            line_width=.02, head_size=2, use_head=True)
 
 
 class MNP_Hysteresis_Analyzer(MNP_Analyzer):
@@ -871,7 +872,7 @@ class MNP_Hysteresis_Analyzer(MNP_Analyzer):
             filename = os.path.join(self.path, thefilename)
         if title is None:
             title = 'MNP {} Hysteresis Loop'.format(self.mnp.id)
-        plt.figure(figsize = figsize)
+        plt.figure(figsize=figsize)
         plt.xlabel(x_label)
         plt.ylabel(y_label)
         plt.title(title)
@@ -883,7 +884,7 @@ class MNP_Hysteresis_Analyzer(MNP_Analyzer):
         for i in y:
             plt.plot(data[x], data[i], **kwargs)
         plt.legend(y)
-        plt.savefig(fname = filename)
+        plt.savefig(fname=filename)
 
     def hyst_steps_plot(self, type='xy', name=None, ax=None, title=None, z_plane=0, figsize=(50, 50), filename=None,
                         filetype=None,
@@ -896,9 +897,9 @@ class MNP_Hysteresis_Analyzer(MNP_Analyzer):
         print('Plotting...')
         max = how_many_m_finals(self.mnp)
         for n in range(max):
-            print('\r' + "|{}{}| {}/{}".format('-' * (n) + '>', ' ' * (max - n - 1), n + 1, max), end = '')
+            print('\r' + "|{}{}| {}/{}".format('-' * (n) + '>', ' ' * (max - n - 1), n + 1, max), end='')
             self.field = self.mnp.load_any_field('m_final_{}'.format(n),
-                                                 filepath = os.path.join(self.mnp.filepath, 'drives'))
+                                                 filepath=os.path.join(self.mnp.filepath, 'drives'))
             if type == 'xy':
                 title = 'MNP {} XY Plot Step {}'.format(self.mnp.id, n)
                 filename = os.path.join(savepath, 'xy_plot_{}.png'.format(n))
@@ -908,9 +909,9 @@ class MNP_Hysteresis_Analyzer(MNP_Analyzer):
                     vector_cmap = 'binary'
                 if scalar_clim is None:
                     scalar_clim = (0, 6.28)
-                self.xy_plot(title = title, ax = ax, z_plane = z_plane, figsize = figsize, filename = filename,
-                             filetype = filetype,
-                             scalar_cmap = scalar_cmap, vector_cmap = vector_cmap, scalar_clim = scalar_clim, **kwargs)
+                self.xy_plot(title=title, ax=ax, z_plane=z_plane, figsize=figsize, filename=filename,
+                             filetype=filetype,
+                             scalar_cmap=scalar_cmap, vector_cmap=vector_cmap, scalar_clim=scalar_clim, **kwargs)
             elif type == 'z':
                 title = 'MNP {} Z Plot Step {}'.format(self.mnp.id, n)
                 filename = os.path.join(savepath, 'z_plot_{}.png'.format(n))
@@ -918,9 +919,9 @@ class MNP_Hysteresis_Analyzer(MNP_Analyzer):
                     scalar_cmap = 'viridis'
                 if scalar_clim is None:
                     scalar_clim = (-1, 1)
-                self.z_plot(title = title, ax = ax, z_plane = z_plane, figsize = figsize, filename = filename,
-                            filetype = filetype,
-                            scalar_cmap = scalar_cmap, scalar_clim = scalar_clim, **kwargs)
+                self.z_plot(title=title, ax=ax, z_plane=z_plane, figsize=figsize, filename=filename,
+                            filetype=filetype,
+                            scalar_cmap=scalar_cmap, scalar_clim=scalar_clim, **kwargs)
             elif type == 'xy_scalar':
                 title = 'MNP {} XY Scalar Plot Step {}'.format(self.mnp.id, n)
                 filename = os.path.join(savepath, 'xy_scalar_plot_{}.png'.format(n))
@@ -928,9 +929,9 @@ class MNP_Hysteresis_Analyzer(MNP_Analyzer):
                     scalar_cmap = 'hsv'
                 if scalar_clim is None:
                     scalar_clim = (0, 6.28)
-                self.xy_scalar_plot(title = title, ax = ax, z_plane = z_plane, figsize = figsize, filename = filename,
-                                    filetype = filetype,
-                                    cmap = scalar_cmap, clim = scalar_clim, **kwargs)
+                self.xy_scalar_plot(title=title, ax=ax, z_plane=z_plane, figsize=figsize, filename=filename,
+                                    filetype=filetype,
+                                    cmap=scalar_cmap, clim=scalar_clim, **kwargs)
             elif type == 'z_scalar':
                 title = 'MNP {} Z Scalar Plot Step {}'.format(self.mnp.id, n)
                 filename = os.path.join(savepath, 'z_scalar_plot_{}.png'.format(n))
@@ -938,9 +939,9 @@ class MNP_Hysteresis_Analyzer(MNP_Analyzer):
                     scalar_cmap = 'viridis'
                 if scalar_clim is None:
                     scalar_clim = (-1, 1)
-                self.z_scalar_plot(ax = ax, title = title, z_plane = z_plane, figsize = figsize, filename = filename,
-                                   filetype = filetype,
-                                   cmap = scalar_cmap, scalar_clim = scalar_clim, **kwargs)
+                self.z_scalar_plot(ax=ax, title=title, z_plane=z_plane, figsize=figsize, filename=filename,
+                                   filetype=filetype,
+                                   cmap=scalar_cmap, scalar_clim=scalar_clim, **kwargs)
         print('\r')
 
     def hyst_movie(self, type='z', movie_name=None, name=None, **kwargs):
@@ -957,7 +958,7 @@ class MNP_Hysteresis_Analyzer(MNP_Analyzer):
                 name = 'z_scalar_hysteresis_plot'
         findpath = os.path.join(self.path, name)
         if not os.path.isdir(findpath):
-            self.hyst_steps_plot(type = type, name = name, **kwargs)
+            self.hyst_steps_plot(type=type, name=name, **kwargs)
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
         images = []
         for n in range(how_many_m_finals(self.mnp)):
@@ -981,10 +982,12 @@ class MNP_Hysteresis_Analyzer(MNP_Analyzer):
         video.release()
         print('Movie saved to ' + movie_name)
 
+
 def angle_finder(point):
     x, y, z = point
     return [np.math.acos(z / np.math.sqrt(x ** 2 + y ** 2 + z ** 2)) * 180 / np.pi,
             np.math.atan2(y, x) * 180 / np.pi]
+
 
 class MNP_Domain_Analyzer(MNP_Analyzer):
     def __init__(self, mnp, step=0, preload_field=False):
@@ -996,7 +999,7 @@ class MNP_Domain_Analyzer(MNP_Analyzer):
     def discretized_cmag(self):
         if not os.path.isfile(os.path.join(self.mnp.filepath, 'centers_data.csv')):
             self.extract()
-        data = np.genfromtxt(os.path.join(self.mnp.filepath, 'centers_data.csv'), delimiter = ',')
+        data = np.genfromtxt(os.path.join(self.mnp.filepath, 'centers_data.csv'), delimiter=',')
         data = data.reshape(-1, 7)
         center_magnetization = np.column_stack((data[:, 3], data[:, 4], data[:, 5]))
 
@@ -1051,7 +1054,7 @@ class MNP_Domain_Analyzer(MNP_Analyzer):
 
         return region_indices
 
-    def plot_regions(self, cmap = 'hsv', point_size = .9, scale=(1,1,1)):
+    def plot_regions(self, cmap='hsv', point_size=.9, scale=(1, 1, 1)):
         cmap = cmap
         color_values = np.array(self.discretized_cmag).astype(float)
         color_values = dfu.normalise_to_range(color_values, (0, 255))
@@ -1076,10 +1079,10 @@ class MNP_Domain_Analyzer(MNP_Analyzer):
                            colors=colors,
                            point_size=point_size)
 
-    def plot_regions_vectors(self,cmap = 'hsv', head_size = 2, scale=(1,1,1)):
+    def plot_regions_vectors(self, cmap='hsv', head_size=2, scale=(1, 1, 1)):
         if not os.path.isfile(os.path.join(self.mnp.filepath, 'centers_data.csv')):
             self.extract()
-        data = np.genfromtxt(os.path.join(self.mnp.filepath, 'centers_data.csv'), delimiter = ',')
+        data = np.genfromtxt(os.path.join(self.mnp.filepath, 'centers_data.csv'), delimiter=',')
         data = data.reshape(-1, 7)
         center_magnetization = np.column_stack((data[:, 3], data[:, 4], data[:, 5]))
 
@@ -1160,11 +1163,11 @@ class MNP_Domain_Analyzer(MNP_Analyzer):
         n = 0
         for i in self.region_list:
             n += i * (i)
-        return (n/len(self.mnp.coord_list))
+        return (n / len(self.mnp.coord_list))
 
     @property
     def free_particle_fraction(self):
-        return self.region_list.count(1)/len(self.mnp.coord_list)
+        return self.region_list.count(1) / len(self.mnp.coord_list)
 
     @property
     def domains_summary(self):
@@ -1182,9 +1185,9 @@ class MNP_Domain_Analyzer(MNP_Analyzer):
                  '| Free Particle Fraction                 | {:<10} |\n'
                  '\n'
                  'Domain Size List: {}').format(self.mnp.id, self.mnp.id, len(self.mnp.coord_list),
-                                              len(self.region_list), csize,
-                                              max(self.region_list), np.mean(self.region_list),
-                                              self. free_particle_fraction,self.region_list))
+                                                len(self.region_list), csize,
+                                                max(self.region_list), np.mean(self.region_list),
+                                                self.free_particle_fraction, self.region_list))
 
     def save_domains(self):
         data_list = [self.mnp.id, len(self.mnp.coord_list),
@@ -1198,31 +1201,36 @@ class MNP_Domain_Analyzer(MNP_Analyzer):
             f.write(self.domains_summary)
         print('MNP Summary Saved: ', os.path.join(self.mnp.filepath, 'summary_mnp_{}.md'.format(self.mnp.id)))
 
+
 def extract_domain_csv(name, filepath='./MNP_Data', filename='domain_data.csv', mode='w', B=0.001):
     with open(filename, mode) as f:
         write = csv.writer(f)
         write.writerow(
             ['MNP Id', 'B (T)', 'Ms_core (A/m)', 'A_core (J/m)', 'K_core (J/m^3)', 'Axes type', 'Characteristic Size',
-             'Max Size'])
-        for i in range(27):
-            B = B
-            mnp = load_mnp(i, name=name, filepath=filepath)
-            with open(os.path.join(mnp.filepath, 'domain_data_mnp_{}.csv'.format(mnp.id)), 'r') as r:
-                csv_reader = list(csv.reader(r))
-                domain_data = []
-                for q in csv_reader:
-                    for j in q:
-                        domain_data.append(j)
-            csize = domain_data[3]
-            maxsize = domain_data[4]
-            m = mnp.ms_core
-            a = mnp.a_core
-            k = mnp.k_core
-            if i // 9 == 0:
-                axes = 'all_random'
-            elif i // 9 == 1:
-                axes = 'random_plane'
-            elif i // 9 == 2:
-                axes = 'random_hexagonal'
-            data_list = [mnp.id, B, m, a, k, axes, csize, maxsize]
-            write.writerow(data_list)
+             'Max Size', 'Free Particle Fraction'])
+        for i in range(54):
+            try:
+                B = B
+                mnp = load_mnp(i, name=name, filepath=filepath)
+                with open(os.path.join(mnp.filepath, 'domain_data_mnp_{}.csv'.format(mnp.id)), 'r') as r:
+                    csv_reader = list(csv.reader(r))
+                    domain_data = []
+                    for q in csv_reader:
+                        for j in q:
+                            domain_data.append(j)
+                csize = domain_data[3]
+                maxsize = domain_data[4]
+                fpf = domain_data[7]
+                m = mnp.ms_core
+                a = mnp.a_core
+                k = mnp.k_core
+                if (i // 9) % 3 == 0:
+                    axes = 'all_random'
+                elif (i // 9) % 3 == 1:
+                    axes = 'random_plane'
+                elif (i // 9) % 3 == 2:
+                    axes = 'random_hexagonal'
+                data_list = [mnp.id, B, m, a, k, axes, csize, maxsize, fpf]
+                write.writerow(data_list)
+            except:
+                print('Failed - MNP {}'.format(i))

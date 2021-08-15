@@ -5,8 +5,8 @@ This is the bulk of MAGNA-U.
 
 ```python
 magna.utils.MNP(id,
-                 r_tuple=(3.5e-9, 3.5e-9, 3e-9),
-                 discretizations=(7, 7, 7),
+                 r_tuple=(4e-9, 3.5e-9, 3e-9),
+                 discretizations=(4, 4, 4),
                  ms_tuple=(2.4e5, 3.9e5),
                  a_tuple=(5e-12, 9e-12),
                  k_tuple=(2e4, 5.4e4),
@@ -17,6 +17,7 @@ magna.utils.MNP(id,
                  layer_radius=3,
                  layer_dims=(3, 10),
                  axes=None,
+                 axes_type='random_hexagonal',
                  directory=os.path.join(os.getcwd(), 'MNP_Data'),
                  loaded_fields='')
 ```
@@ -62,10 +63,6 @@ The following attributes are given to an MNP when it is first initialized:
    `(k_shell, k_core)`where k_shell is the magnetic anisotropy constant of the
    shell, and k_core is the magnetic anisotropy constant of the core, all in J/m<sup>3</sup>.
      - *default value:* `(2e4, 5.4e4)`
- - `axes`: This is used to specify the easy axes for uniaxial anistropy in each MNP.
-   If you omit this argument, a new random set of easy axes will be generated, but
-   you can pass a list of axes here if you want to use predefined easy axes.
-     - *default value:* `None`
  - `shape`: the shape of one layer of MNPs. Current options are `'hexagon'`, `'circle'`, and `'rectangle'`.
      - *default value:* `'hexagon'`
  - `form`: the method of packing/stacking. Current options are `'fcc'` (face-centered cubic),
@@ -85,6 +82,10 @@ The following attributes are given to an MNP when it is first initialized:
   each nanoparticle in the assembly. Use this if you want to predetermine what the easy axes are,
   otherwise leave this blank and the axes will be automatically randomly generated.
     - *default value:* `None`
+-  `axes_type`: This is how the easy axes will be randomly generated: `'all_random'` for easy axes
+   as any 3vector, `'random_plane'` for easy axes in the xy plane, or
+   `'random_hexagonal'` for easy axes in the xy plane in one of six hexagonal directions 120° apart.
+    - *default value:* `'random_hexagonal'`
 - `loaded_fields`: A string containing any of m, a, k, and u corresponding to the "maku" fields to
   be preloaded from a file. Used by the `load_mnp` function but can be ignored otherwise.
     - *default value:* `''`

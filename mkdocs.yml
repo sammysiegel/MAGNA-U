@@ -17,6 +17,7 @@ nav:
     - MNP Analyzers:
       - MNP Analyzer: MNP_Analyzer.md
       - MNP Hysteresis Analyzer: MNP_Hysteresis_Analyzer.md
+      - MNP Domain Analyzer: MNP_Domain_Analyzer.md
     - Lattice: Lattice.md
 
 theme:

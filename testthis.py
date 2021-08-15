@@ -60,7 +60,10 @@ checks = {'Create an MNP': "mnp = mu.MNP(0, name='test', directory=run_dir, laye
           'Create MNP_Hysteresis_Analyzer': "hyst_plotter = mu.MNP_Hysteresis_Analyzer(mnp)",
           'Hysteresis Loop Plot': "hyst_plotter.hyst_loop_plot()",
           'Hysteresis Step Plots': "hyst_plotter.hyst_steps_plot(type='z')",
-          'Hysteresis Movie': "hyst_plotter.hyst_movie()"
+          'Hysteresis Movie': "hyst_plotter.hyst_movie()",
+          'Create MNP_Domain_Analyzer': "dom_plotter = mu.MNP_Domain_Analyzer(mnp, preload_field=True)",
+          'Find Domain Regions': "dom_plotter.find_regions()",
+          'Save Domain Data': "dom_plotter.save_regions()"
           }
 
 for n in range(len(checks)):

@@ -39,6 +39,7 @@ version using the `load_mnp()` function.
 |[`MNP_HysteresisDriver`](MNP_HysteresisDriver.md) | A child class of `oommfc.HysteresisDriver` used to run hysteresis drives of a specific `MNP` instance.|
 |[`MNP_Analyzer`](MNP_Analyzer.md)| Used to make plots data from MNP drives|
 |[`MNP_Hysteresis_Analyzer`](MNP_Hysteresis_Analyzer.md)| Used to make plots and movies from MNP hysteresis drives|
+|[`MNP_Domain_Analyzer`](MNP_Domain_Analyzer.md)| Used to analyze the domain regions that are formed in an MNP Assembly
 
 
 ### Functions
@@ -50,6 +51,15 @@ version using the `load_mnp()` function.
 |[`quick_drive`](Quick_Drive.md)| Easy way to drive an MNP assembly|
 
 ## Changelog
+- Version 2.5.0 (15 Aug 2021)
+    - reverted back to original distance finding method from cdist
+    - added MNP_Domain_Analyzer
+         - now using networks to find domain regions
+         - metrics: characteristic size, max size, mean size, free particle fraction
+         - region plots: as spheres or vectors
+         - saving domain region data/getting summary data
+    - added choice of easy axes with axes_type:'random_hexagonal', 'random_plane', 'all_random'
+    - extract_domain_csv, to return domain data from several mnps as one csv
 - Version 2.4.0 (11 June 2021)
     - `k3d_center_vectors()`: addition of coloring by layer with `color_field = 'layer'`, 
       scaling with `scale`, and color mapping with `cmap`.
