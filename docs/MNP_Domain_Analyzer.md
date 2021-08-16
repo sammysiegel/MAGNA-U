@@ -63,7 +63,8 @@ method, which saves the summary to a markdown file and the raw data to a
 If you have a `'domain_data_mnp_{}.csv'` in multiple mnp folders with the same
 name (root folder), you can extract them to a combined csv file.
 ```python
-magna.utils.extract_domain_csv(name, 
+magna.utils.extract_domain_csv(name,
+                               number=27,                            
                                filepath='./MNP_Data', 
                                filename='domain_data.csv', 
                                mode='w', 
@@ -73,7 +74,8 @@ Note: This function is part of the larger `magna.utils` package, not the `MNP_Do
 
 The required positional argument `name` is the name of each mnp, or, if you
 are storing data in a folder not using the standard MAGNA-U file organization,
-this is the *name* of the folder containing the mnp folders. `filepath` is the
+this is the *name* of the folder containing the mnp folders. `number` is the number
+of MNPs from which you wish to extract data, which is 27 by default. `filepath` is the
 path to this aformentioned name folder. `filename` is the desired path/name of the
 output file, which by default is `domain_data.csv`. `mode` determines how data
 is added to the csv file. If `mode='w'` (write), data is added by overwriting

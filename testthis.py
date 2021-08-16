@@ -11,7 +11,7 @@ print('----------------------------------------------------------')
 print('\n', 'Testing Dependencies...', '\n')
 
 dependencies = ['magna.utils', 'ubermag', 'oommfc', 'discretisedfield', 'micromagneticmodel', 'micromagneticdata', 'matplotlib',
-                'matplotlib.pyplot', 'k3d', 'numpy', 'pandas', 'csv', 'random', 'ast', 'time', 'os', 'sys', 'cv2']
+                'matplotlib.pyplot', 'k3d', 'numpy', 'pandas', 'csv', 'random', 'ast', 'time', 'os', 'sys', 'cv2', 'networkx']
 
 for dependency in dependencies:
     progress_bar(dependencies.index(dependency)+1, len(dependencies))
@@ -63,7 +63,7 @@ checks = {'Create an MNP': "mnp = mu.MNP(0, name='test', directory=run_dir, laye
           'Hysteresis Movie': "hyst_plotter.hyst_movie()",
           'Create MNP_Domain_Analyzer': "dom_plotter = mu.MNP_Domain_Analyzer(mnp, preload_field=True)",
           'Find Domain Regions': "dom_plotter.find_regions()",
-          'Save Domain Data': "dom_plotter.save_regions()"
+          'Save Domain Data': "dom_plotter.save_domains()"
           }
 
 for n in range(len(checks)):

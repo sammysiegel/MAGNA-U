@@ -1202,13 +1202,13 @@ class MNP_Domain_Analyzer(MNP_Analyzer):
         print('MNP Summary Saved: ', os.path.join(self.mnp.filepath, 'summary_mnp_{}.md'.format(self.mnp.id)))
 
 
-def extract_domain_csv(name, filepath='./MNP_Data', filename='domain_data.csv', mode='w', B=0.001):
+def extract_domain_csv(name, number=27, filepath='./MNP_Data', filename='domain_data.csv', mode='w', B=0.001):
     with open(filename, mode) as f:
         write = csv.writer(f)
         write.writerow(
             ['MNP Id', 'B (T)', 'Ms_core (A/m)', 'A_core (J/m)', 'K_core (J/m^3)', 'Axes type', 'Characteristic Size',
              'Max Size', 'Free Particle Fraction'])
-        for i in range(54):
+        for i in range(number):
             try:
                 B = B
                 mnp = load_mnp(i, name=name, filepath=filepath)

@@ -51,6 +51,9 @@ version using the `load_mnp()` function.
 |[`quick_drive`](Quick_Drive.md)| Easy way to drive an MNP assembly|
 
 ## Changelog
+- Version 2.5.1 (16 August 2021)
+    - updated `testthis.py` to test new features/dependencies
+    -  updated extract_domain_csv() to add `number` parameter, which allows you to specify the number of mnps to extract data from
 - Version 2.5.0 (15 Aug 2021)
     - reverted back to original distance finding method from cdist
     - added MNP_Domain_Analyzer
