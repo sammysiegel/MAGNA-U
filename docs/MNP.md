@@ -44,13 +44,13 @@ The following attributes are given to an MNP when it is first initialized:
    `(r_total, r_shell, r_core)`where r_total is the total radius between
    individual MNPs, r_shell is the radius of the shell, and r_core is the radius
    of the core, all in meters.
-     - *default value:* `(3.5e-9, 3.5e-9, 3e-9)`
+     - *default value:* `(4e-9, 3.5e-9, 3e-9)`
  -  `discretizations`: this takes a tuple of three values in the form (x, y, z), 
     where x, y, and z are the number of divisions per r_total that determines how
     small each cell is in your simulation for each respective axis. A larger number
     makes more divisions and smaller cells. For example, putting 7 for x would
     result in a total x discretization length of r_total/7.
-     - *default value:* `(7,7,7)`
+     - *default value:* `(4,4,4)`
  - `ms_tuple`: This function takes a tuple of two values in the form
    `(ms_shell, ms_core)`where ms_shell is the saturation magnetization of the
    shell, and ms_core is the saturation magnetization of the core, all in A/m.

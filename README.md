@@ -387,6 +387,9 @@ colored by either the z component (default) or the xy angle component by using
 will likely take significantly longer than coloring using z.
    
 ### Changelog
+- Version 2.5.2 (17 August 2021)
+    - `install.py` bugfixes
+    - updated documentation to reflect new default values for `MNP` attributes
 - Version 2.5.1 (16 August 2021)
     - updated `testthis.py` to test new features/dependencies
     -  updated extract_domain_csv() to add `number` parameter, which allows you to specify the number of mnps to extract data from

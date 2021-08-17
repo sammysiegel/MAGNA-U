@@ -13,8 +13,8 @@ for i in sys.path:
 if directory is None:
     raise OSError('Install failed: install path not found')
 
-input = input('Are you installing onto a server? [y/n]')
-if input=='y':
+server = input('Are you installing onto a server? [y/n]')
+if server=='y':
     with open('./magna/utils.py', 'a') as f:
         f.write("\n"*2)
         f.write("matplotlib.use('Agg')")
