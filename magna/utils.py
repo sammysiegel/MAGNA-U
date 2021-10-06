@@ -1,3 +1,4 @@
+import json
 import numpy as np
 import csv
 import random
@@ -593,7 +594,7 @@ class MNP_MinDriver(mc.MinDriver):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def drive_mnp(self, mnp, **kwargs):
+    def drive_mnp(self, mnp, make_json=True, **kwargs):
         drivepath = os.path.join(mnp.filepath, 'drives')
         if not os.path.isdir(drivepath):
             os.mkdir(drivepath)
@@ -601,15 +602,44 @@ class MNP_MinDriver(mc.MinDriver):
         system.initialize()
         self.drive(system, **kwargs)
         mnp.save_any_field(system.m, field_name='m_final_{}'.format(how_many_m_finals(mnp)), filepath=drivepath)
+        if make_json:
+            self.drive_json(system, drivepath)
 
-    def drive_system(self, system, **kwargs):
+    def drive_system(self, system, make_json=True, **kwargs):
         drivepath = os.path.join(system.mnp.filepath, 'drives')
         if not os.path.isdir(drivepath):
             os.mkdir(drivepath)
         self.drive(system, **kwargs)
         system.mnp.save_any_field(system.m, field_name='m_final_{}'.format(how_many_m_finals(system.mnp)),
                                   filepath=drivepath)
+        if make_json:
+            self.drive_json(system, drivepath)
 
+    def drive_json(self, system, drivepath):
+        Bx, By, Bz = system.energy.zeeman.H[0] * mm.consts.mu0, system.energy.zeeman.H[1] * mm.consts.mu0, \
+                     system.energy.zeeman.H[2] * mm.consts.mu0
+        drive_dict = {'Id': system.mnp.id,
+                      'Name': system.mnp.name,
+                      'Layer Radius': system.mnp.layer_radius,
+                      'Layer Dims': system.mnp.layer_dims,
+                      'Number of Layers': system.mnp.n_layers,
+                      'Discretizations': (system.mnp.x_divs, system.mnp.y_divs, system.mnp.z_divs),
+                      'Ms Core': system.mnp.ms_core,
+                      'Ms Shell': system.mnp.ms_shell,
+                      'A Core': system.mnp.a_core,
+                      'A Shell': system.mnp.a_shell,
+                      'K Core': system.mnp.k_core,
+                      'K Shell': system.mnp.k_shell,
+                      'Easy Axis Type': system.mnp.axes_type,
+                      'Bx': Bx,
+                      'By': By,
+                      'Bz': Bz,
+                      'Drive Number': how_many_m_finals(system.mnp),
+                      'Date': time.asctime()
+                      }
+        with open(os.path.join(drivepath, 'drive_{}_info.json'.format(how_many_m_finals(system.mnp))),
+                  'w') as outfile:
+            json.dump(drive_dict, outfile)
 
 def make_h_list(Hmin, Hmax, n):
     hmin = np.array(Hmin)
