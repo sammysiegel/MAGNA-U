@@ -641,6 +641,7 @@ class MNP_MinDriver(mc.MinDriver):
                   'w') as outfile:
             json.dump(drive_dict, outfile)
 
+
 def make_h_list(Hmin, Hmax, n):
     hmin = np.array(Hmin)
     hmax = np.array(Hmax)
@@ -1240,7 +1241,6 @@ def extract_domain_csv(name, number=27, filepath='./MNP_Data', filename='domain_
              'Max Size', 'Free Particle Fraction'])
         for i in range(number):
             try:
-                B = B
                 mnp = load_mnp(i, name=name, filepath=filepath)
                 with open(os.path.join(mnp.filepath, 'domain_data_mnp_{}.csv'.format(mnp.id)), 'r') as r:
                     csv_reader = list(csv.reader(r))
@@ -1254,13 +1254,21 @@ def extract_domain_csv(name, number=27, filepath='./MNP_Data', filename='domain_
                 m = mnp.ms_core
                 a = mnp.a_core
                 k = mnp.k_core
+                try:
+                    drivepath = os.path.join(mnp.filepath, 'drives')
+                    with open(os.path.join(drivepath, 'drive_0_info.json'), 'r') as openfile:
+                        json_object = json.load(openfile)
+                        Bz = json_object.get('Bz')
+                except:
+                    print('No .json drive file found... Setting B =', B)
+                    Bz = B
                 if (i // 9) % 3 == 0:
                     axes = 'all_random'
                 elif (i // 9) % 3 == 1:
                     axes = 'random_plane'
                 elif (i // 9) % 3 == 2:
                     axes = 'random_hexagonal'
-                data_list = [mnp.id, B, m, a, k, axes, csize, maxsize, fpf]
+                data_list = [mnp.id, Bz, m, a, k, axes, csize, maxsize, fpf]
                 write.writerow(data_list)
             except:
                 print('Failed - MNP {}'.format(i))
