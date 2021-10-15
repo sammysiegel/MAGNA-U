@@ -1014,17 +1014,19 @@ class MNP_Hysteresis_Analyzer(MNP_Analyzer):
         print('Movie saved to ' + movie_name)
 
 
-def angle_finder(point):
+def angle_finder(point, d_theta, d_phi):
     x, y, z = point
-    return [np.math.acos(z / np.math.sqrt(x ** 2 + y ** 2 + z ** 2)) * 180 / np.pi,
-            np.math.atan2(y, x) * 180 / np.pi]
+    return [((np.math.acos(z / np.math.sqrt(x ** 2 + y ** 2 + z ** 2)) * 180 / np.pi)+d_theta)%180,
+            ((np.math.atan2(y, x) * 180 / np.pi)+180+d_phi)%360]
 
 
 class MNP_Domain_Analyzer(MNP_Analyzer):
-    def __init__(self, mnp, step=0, preload_field=False):
+    def __init__(self, mnp, step=0, preload_field=True, d_theta=0, d_phi=0):
         super().__init__(mnp, step, preload_field)
 
         self.region_list = None
+        self.d_theta = d_theta
+        self.d_phi = d_phi
 
     @property
     def discretized_cmag(self):
@@ -1037,7 +1039,7 @@ class MNP_Domain_Analyzer(MNP_Analyzer):
         theta_list = []
         phi_list = []
         for point in center_magnetization:
-            theta, phi = angle_finder(point)
+            theta, phi = angle_finder(point, self.d_theta, self.d_phi)
             theta_list.append(theta)
             phi_list.append(phi)
 
