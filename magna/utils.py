@@ -1048,11 +1048,11 @@ class MNP_Domain_Analyzer(MNP_Analyzer):
         for i in range(len(phi_list)):
             z = theta_bins[i]
             if z == 0 or z == 5:
-                phi_bins.append(np.digitize(phi_list[i] + 180, [180, 360], right=True))
+                phi_bins.append(np.digitize(phi_list[i], [180, 360], right=True))
             if z == 1 or z == 4:
-                phi_bins.append(np.digitize(phi_list[i] + 180, [90, 180, 270, 360], right=True))
+                phi_bins.append(np.digitize(phi_list[i], [90, 180, 270, 360], right=True))
             if z == 2 or z == 3:
-                phi_bins.append(np.digitize(phi_list[i] + 180, [60, 120, 180, 240, 300, 360], right=True))
+                phi_bins.append(np.digitize(phi_list[i], [60, 120, 180, 240, 300, 360], right=True))
 
         region_index_dict = {
             (2, 0): 1,
