@@ -6,6 +6,10 @@ Assembly. It is a child class of `MNP_Analyzer`.
 ```python
 magna.utils.MNP_Domain_Analyzer
 ```
+### Attributes:
+ - All of those attributes of `mu.MNP_Analyzer`, plus:
+     - `d_theta`: the offset in the colatitude when creating discretized domain regions, in degrees.
+     - `d_theta`: the offset in the longitude when creating discretized domain regions, in degrees.
 
 ## Plots
 There are two 3D plots you can create to visualize the domain regions in an MNP
@@ -81,3 +85,27 @@ output file, which by default is `domain_data.csv`. `mode` determines how data
 is added to the csv file. If `mode='w'` (write), data is added by overwriting
 anything that may already be in the file. If `mode='a'` (append), data is added
 at the end of the file, preserving anything that is already there.
+
+## Analysis with Multiple Values of &Delta;&theta; and &Delta;&phi;
+If you are interested not in one particular orientation of the discretization regions but rather
+want to see the effect of applying many orientations, you can use the 
+`mu.MNP_Domain_Analyzer.save_averaged_data()` method. This function automatically goes through over
+800 possible values of `d_theta` and `d_phi`. It writes the file `axes_range_data.csv` in
+the MNP's file folder which contains the &Delta;&theta; and &Delta;&phi;, Characteristic Domain Size, 
+Max Domain Size, and Free Particle Fraction for each MNP.
+
+## Extracting Average Values from `save_averaged_data()` for Mulitple MNPs
+If you have a folder of MNPs for which you have already extracted the `axes_range_data.csv`
+files, you can average the statistics over all values of &Delta;&theta; and &Delta;&phi; and
+combine these statistics from all MNPs in one place with `mu.extract_average_domain_data`.
+
+```python
+magna.utils.extract_average_domain_data(name, 
+                                        filename='sorted_data.csv', 
+                                        mode = 'w', 
+                                        number=36)
+```
+Here, `name` is the name of the folder located in `./MNP_Data` containing the MNPs you wish to 
+extract data from. `filename` is the desired output destination. The mode `w` writes a new file,
+overwriting anything that may already be there, while `a` appends to an existing file. `number` 
+is how many MNPs you wish to extract data from.

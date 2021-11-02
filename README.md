@@ -1,5 +1,5 @@
 # Magnetic Nanoparticle Assembly Utilities (MAGNA-U)
-#### Version 2.5.1
+#### Version 2.6.0
 
 | Description| Badge|
 | --------|-------|
@@ -387,6 +387,12 @@ colored by either the z component (default) or the xy angle component by using
 will likely take significantly longer than coloring using z.
    
 ### Changelog
+- Version 2.6.0 (1 November 2021)
+    - `drives generate json files
+    - `extract_domain_csvs` can get the magnetic field data from the .json files
+    - angle_finder can offset theta/phi by specified d_theta, d_phi
+    -you can now perform domain statistics for many values of d_theta/d_phi and save those with `mu.MNP_Domain_Analyzer.save_averaged_data`
+    - you can average data from the different d_theta/d_phi from multiple MNPs and save it to one csv with `mu.extract_average_domain_data`
 - Version 2.5.2 (17 August 2021)
     - `install.py` bugfixes
     - updated documentation to reflect new default values for `MNP` attributes
