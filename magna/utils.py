@@ -1234,6 +1234,19 @@ class MNP_Domain_Analyzer(MNP_Analyzer):
             f.write(self.domains_summary)
         print('MNP Summary Saved: ', os.path.join(self.mnp.filepath, 'summary_mnp_{}.md'.format(self.mnp.id)))
 
+    def save_averaged_data(self):
+        with open(os.path.join(self.filepath, 'axes_range_data.csv'), 'w') as f:
+            write = csv.writer(f)
+            write.writerow(
+                ["d_theta", "d_phi", "Characteristic Domain Size", "Max Domain Size", "Free Particle Fraction"])
+            for d_theta in [i * 5 for i in range(0, 36)]:
+                for d_phi in [j * 15 for j in range(0, 24)]:
+                    self.d_theta = d_theta
+                    self.d_phi = d_phi
+                    self.find_regions()
+                    data = [self.d_theta, self.d_phi, self.characteristic_size, max(self.region_list),
+                            self.free_particle_fraction]
+                    write.writerow(data)
 
 def extract_domain_csv(name, number=27, filepath='./MNP_Data', filename='domain_data.csv', mode='w', B=0.001):
     with open(filename, mode) as f:
@@ -1258,7 +1271,7 @@ def extract_domain_csv(name, number=27, filepath='./MNP_Data', filename='domain_
                 k = mnp.k_core
                 try:
                     drivepath = os.path.join(mnp.filepath, 'drives')
-                    with open(os.path.join(drivepath, 'drive_0_info.json'), 'r') as openfile:
+                    with open(os.path.join(drivepath, 'drive_1_info.json'), 'r') as openfile:
                         json_object = json.load(openfile)
                         Bz = json_object.get('Bz')
                 except:
@@ -1274,3 +1287,28 @@ def extract_domain_csv(name, number=27, filepath='./MNP_Data', filename='domain_
                 write.writerow(data_list)
             except:
                 print('Failed - MNP {}'.format(i))
+
+def extract_average_domain_data(name, filename='sorted_data.csv', mode = 'w', number=36):
+    with open(filename, mode) as f:
+        write = csv.writer(f)
+        write.writerow(["MNP", "B (T)", "Ms (A/m)", "K (J/m^3)", "A (J/m)", "Avg. FPF", "\u03C3 FPF", "Avg. C-Size",
+                        "\u03C3 C-Size", "Avg. Max Size", "\u03C3 Max Size"])
+        for i in range(number):
+            mnp = load_mnp(i, name=name)
+            m = mnp.ms_core
+            a = mnp.a_core
+            k = mnp.k_core
+            data = pd.read_csv(os.path.join(mnp.filepath, 'axes_range_data.csv'))
+            fpf_mean_data = np.mean(data["Free Particle Fraction"])
+            fpf_st_dv_data = np.std(data['Free Particle Fraction'])
+            c_size_mean_data = np.mean(data["Characteristic Domain Size"])
+            c_size_st_dv_data = np.std(data['Characteristic Domain Size'])
+            max_size_mean_data = np.mean(data["Max Domain Size"])
+            max_size_st_dv_data = np.std(data['Max Domain Size'])
+            drivepath = os.path.join(mnp.filepath, 'drives')
+            with open(os.path.join(drivepath, 'drive_1_info.json'), 'r') as openfile:
+                json_object = json.load(openfile)
+                Bz = json_object.get('Bz')
+            data_list = [i, Bz, m, k, a, fpf_mean_data, fpf_st_dv_data, c_size_mean_data, c_size_st_dv_data,
+                         max_size_mean_data, max_size_st_dv_data]
+            write.writerow(data_list)
