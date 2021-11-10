@@ -1235,7 +1235,7 @@ class MNP_Domain_Analyzer(MNP_Analyzer):
         print('MNP Summary Saved: ', os.path.join(self.mnp.filepath, 'summary_mnp_{}.md'.format(self.mnp.id)))
 
     def save_averaged_data(self):
-        with open(os.path.join(self.filepath, 'axes_range_data.csv'), 'w') as f:
+        with open(os.path.join(self.mnp.filepath, 'axes_range_data.csv'), 'w') as f:
             write = csv.writer(f)
             write.writerow(
                 ["d_theta", "d_phi", "Characteristic Domain Size", "Max Domain Size", "Free Particle Fraction"])
@@ -1247,6 +1247,7 @@ class MNP_Domain_Analyzer(MNP_Analyzer):
                     data = [self.d_theta, self.d_phi, self.characteristic_size, max(self.region_list),
                             self.free_particle_fraction]
                     write.writerow(data)
+
 
 def extract_domain_csv(name, number=27, filepath='./MNP_Data', filename='domain_data.csv', mode='w', B=0.001):
     with open(filename, mode) as f:
@@ -1288,12 +1289,13 @@ def extract_domain_csv(name, number=27, filepath='./MNP_Data', filename='domain_
             except:
                 print('Failed - MNP {}'.format(i))
 
-def extract_average_domain_data(name, filename='sorted_data.csv', mode = 'w', number=36):
+
+def extract_average_domain_data(name, filename='sorted_data.csv', mode='w', start=0, end=36):
     with open(filename, mode) as f:
         write = csv.writer(f)
         write.writerow(["MNP", "B (T)", "Ms (A/m)", "K (J/m^3)", "A (J/m)", "Avg. FPF", "\u03C3 FPF", "Avg. C-Size",
                         "\u03C3 C-Size", "Avg. Max Size", "\u03C3 Max Size"])
-        for i in range(number):
+        for i in range(start, end):
             mnp = load_mnp(i, name=name)
             m = mnp.ms_core
             a = mnp.a_core

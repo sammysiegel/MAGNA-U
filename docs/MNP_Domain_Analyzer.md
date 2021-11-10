@@ -94,7 +94,7 @@ want to see the effect of applying many orientations, you can use the
 the MNP's file folder which contains the &Delta;&theta; and &Delta;&phi;, Characteristic Domain Size, 
 Max Domain Size, and Free Particle Fraction for each MNP.
 
-## Extracting Average Values from `save_averaged_data()` for Mulitple MNPs
+## Extracting Average Values from `extract_average_domain_data()` for Mulitple MNPs
 If you have a folder of MNPs for which you have already extracted the `axes_range_data.csv`
 files, you can average the statistics over all values of &Delta;&theta; and &Delta;&phi; and
 combine these statistics from all MNPs in one place with `mu.extract_average_domain_data`.
@@ -103,9 +103,10 @@ combine these statistics from all MNPs in one place with `mu.extract_average_dom
 magna.utils.extract_average_domain_data(name, 
                                         filename='sorted_data.csv', 
                                         mode = 'w', 
-                                        number=36)
+                                        start = 0,
+                                        end=36)
 ```
 Here, `name` is the name of the folder located in `./MNP_Data` containing the MNPs you wish to 
 extract data from. `filename` is the desired output destination. The mode `w` writes a new file,
-overwriting anything that may already be there, while `a` appends to an existing file. `number` 
-is how many MNPs you wish to extract data from.
+overwriting anything that may already be there, while `a` appends to an existing file. `start` 
+is the starting MNP id to iterate through and `end` is the ending MNP id (exclusive).

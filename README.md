@@ -1,5 +1,5 @@
 # Magnetic Nanoparticle Assembly Utilities (MAGNA-U)
-#### Version 2.6.0
+#### Version 2.6.1
 
 | Description| Badge|
 | --------|-------|
@@ -387,6 +387,9 @@ colored by either the z component (default) or the xy angle component by using
 will likely take significantly longer than coloring using z.
    
 ### Changelog
+- Version 2.6.1 (10 November 2021)
+    - fixed bug with `save_averaged_data`
+    - `extract_average_domain_data` can specify the start mnp and the end mnp
 - Version 2.6.0 (1 November 2021)
     - `drives generate json files
     - `extract_domain_csvs` can get the magnetic field data from the .json files
