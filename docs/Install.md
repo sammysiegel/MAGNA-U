@@ -62,7 +62,8 @@ installed in your environment. Specifically, the following packages currently
 must be available in your environment in order to work:
 
  - `ast, csv, random, time, os` from Python Standard Library
- - `numpy`
+ - `numpy`, `pandas`, and `scipy`
  - `discretisedfield`, `micromagneticmodel`, and `oommfc` from Ubermag
  - `matplotlib` and `k3d` for plotting
  - `opencv-python` (import as `cv2`) 
+ - `networkx` for constructing graphs

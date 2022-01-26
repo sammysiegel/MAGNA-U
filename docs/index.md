@@ -51,6 +51,12 @@ version using the `load_mnp()` function.
 |[`quick_drive`](Quick_Drive.md)| Easy way to drive an MNP assembly|
 
 ## Changelog
+ - Version 2.7.0 (26 January 2022)
+    - New statistic: 2-3 Particle Fraction
+    - Can save multiple `axes_range_data` csv files with `save_averaged_data()` by if you iterate the `step` attribute of each `MNP_Domain_Analyzer`.
+    - You can extract multiple steps for an MNP with `extract_average_domain_data`
+    - Print statements to indicate the time taken to perform various tasks
+    - some bug fixes
  - Version 2.6.1 (10 November 2021)
     - fixed bug with `save_averaged_data`
     - `extract_average_domain_data` can specify the start mnp and the end mnp

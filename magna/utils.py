@@ -403,6 +403,7 @@ class MNP(Lattice):
                 cell=(self.r_total / self.x_divs, self.r_total / self.y_divs, self.r_total / self.z_divs))
 
     def make_m_field(self, m0='random'):
+        t0 = time.time()
         if m0 == 'random':
             self.m_field = df.Field(self.mesh, dim=3,
                                     value=lambda point: [2 * random.random() - 1 for _ in range(3)],
@@ -411,15 +412,22 @@ class MNP(Lattice):
             self.m_field = df.Field(self.mesh, dim=3,
                                     value=m0,
                                     norm=self.ms_func)
+        print('M Field made in {} s'.format(time.time()-t0))
 
     def make_a_field(self):
+        t0 = time.time()
         self.a_field = df.Field(self.mesh, dim=1, value=self.a_func)
+        print('A Field made in {} s'.format(time.time()-t0))
 
     def make_k_field(self):
+        t0 = time.time()
         self.k_field = df.Field(self.mesh, dim=1, value=self.k_func)
+        print('K Field made in {} s'.format(time.time()-t0))
 
     def make_u_field(self):
+        t0 = time.time()
         self.u_field = df.Field(self.mesh, dim=3, value=self.u_func)
+        print('U Field made in {} s'.format(time.time()-t0))
 
     def initialize(self, fields='maku', autosave=True, m0='random'):
         if 'm' in fields:
@@ -454,7 +462,7 @@ class MNP(Lattice):
         if 'k' in fields:
             self.k_field.write(os.path.join(path, 'k_field_mnp_{}.ovf'.format(self.id)))
         if 'u' in fields:
-            self.a_field.write(os.path.join(path, 'u_field_mnp_{}.ovf'.format(self.id)))
+            self.u_field.write(os.path.join(path, 'u_field_mnp_{}.ovf'.format(self.id)))
 
     def save_any_field(self, field, field_name, filepath='default'):
         if filepath == 'default':
@@ -691,6 +699,7 @@ class MNP_Analyzer:
     def __init__(self, mnp, step=0, preload_field=True):
         self.mnp = mnp
         self.path = os.path.join(self.mnp.filepath, 'plots')
+        self.step = step
         if not os.path.isdir(self.path):
             os.mkdir(self.path)
         if preload_field:
@@ -779,6 +788,7 @@ class MNP_Analyzer:
                                                              cmap=cmap, **kwargs)
 
     def extract(self):
+        t0 = time.time()
         print("Extracting center magnetization values...")
         x, y, z = self.mnp.scaled_coords[:, 0], self.mnp.scaled_coords[:, 1], self.mnp.scaled_coords[:, 2]
         mx = []
@@ -793,6 +803,7 @@ class MNP_Analyzer:
             angle.append(self.field.plane(z=k).angle.line(p1=point, p2=(0, 0, k), n=2).data.v[0])
         table = np.column_stack((x, y, z, mx, my, mz, angle))
         table.tofile(os.path.join(self.mnp.filepath, 'centers_data.csv'), sep=',')
+        print('Values extracted in {} s'.format(time.time()-t0))
 
     def mpl_center_vectors(self, color_field='z', ax=None, title=None, x_label=None, y_label=None, figsize=None,
                            filename=None,
@@ -1202,6 +1213,10 @@ class MNP_Domain_Analyzer(MNP_Analyzer):
     def free_particle_fraction(self):
         return self.region_list.count(1) / len(self.mnp.coord_list)
 
+    @property 
+    def two_three_particle_fraction(self):
+        return (2*self.region_list.count(2)+3*self.region_list.count(3)) / len(self.mnp.coord_list)
+
     @property
     def domains_summary(self):
         csize = self.characteristic_size
@@ -1216,16 +1231,17 @@ class MNP_Domain_Analyzer(MNP_Analyzer):
                  '| Max Domain Size                        | {:<10} |\n'
                  '| Average Domain Size                    | {:<10} |\n'
                  '| Free Particle Fraction                 | {:<10} |\n'
+                 '| 2-3 Particle Fraction                  | {:<10} |\n'
                  '\n'
                  'Domain Size List: {}').format(self.mnp.id, self.mnp.id, len(self.mnp.coord_list),
                                                 len(self.region_list), csize,
                                                 max(self.region_list), np.mean(self.region_list),
-                                                self.free_particle_fraction, self.region_list))
+                                                self.free_particle_fraction, self.two_three_particle_fraction, self.region_list))
 
     def save_domains(self):
         data_list = [self.mnp.id, len(self.mnp.coord_list),
                      len(self.region_list), self.characteristic_size,
-                     max(self.region_list), np.mean(self.region_list), self.region_list, self.free_particle_fraction]
+                     max(self.region_list), np.mean(self.region_list), self.region_list, self.free_particle_fraction, self.two_three_particle_fraction]
         with open(os.path.join(self.mnp.filepath, 'domain_data_mnp_{}.csv'.format(self.mnp.id)), 'w') as f:
             write = csv.writer(f)
             write.writerow(data_list)
@@ -1235,18 +1251,20 @@ class MNP_Domain_Analyzer(MNP_Analyzer):
         print('MNP Summary Saved: ', os.path.join(self.mnp.filepath, 'summary_mnp_{}.md'.format(self.mnp.id)))
 
     def save_averaged_data(self):
-        with open(os.path.join(self.mnp.filepath, 'axes_range_data.csv'), 'w') as f:
+        t0 = time.time()
+        with open(os.path.join(self.mnp.filepath, 'axes_range_data_{}.csv'.format(self.step)), 'w') as f:
             write = csv.writer(f)
             write.writerow(
-                ["d_theta", "d_phi", "Characteristic Domain Size", "Max Domain Size", "Free Particle Fraction"])
+                ["d_theta", "d_phi", "Characteristic Domain Size", "Max Domain Size", "Free Particle Fraction", "2-3 Particle Fraction"])
             for d_theta in [i * 5 for i in range(0, 36)]:
                 for d_phi in [j * 15 for j in range(0, 24)]:
                     self.d_theta = d_theta
                     self.d_phi = d_phi
                     self.find_regions()
                     data = [self.d_theta, self.d_phi, self.characteristic_size, max(self.region_list),
-                            self.free_particle_fraction]
+                            self.free_particle_fraction, self.two_three_particle_fraction]
                     write.writerow(data)
+        print("Averaged domain data saved in {} s".format(time.time()-t0))
 
 
 def extract_domain_csv(name, number=27, filepath='./MNP_Data', filename='domain_data.csv', mode='w', B=0.001):
@@ -1254,7 +1272,7 @@ def extract_domain_csv(name, number=27, filepath='./MNP_Data', filename='domain_
         write = csv.writer(f)
         write.writerow(
             ['MNP Id', 'B (T)', 'Ms_core (A/m)', 'A_core (J/m)', 'K_core (J/m^3)', 'Axes type', 'Characteristic Size',
-             'Max Size', 'Free Particle Fraction'])
+             'Max Size', 'Free Particle Fraction', '2-3 Particle Fraction'])
         for i in range(number):
             try:
                 mnp = load_mnp(i, name=name, filepath=filepath)
@@ -1267,6 +1285,7 @@ def extract_domain_csv(name, number=27, filepath='./MNP_Data', filename='domain_
                 csize = domain_data[3]
                 maxsize = domain_data[4]
                 fpf = domain_data[7]
+                pf23 = domain_data[8]
                 m = mnp.ms_core
                 a = mnp.a_core
                 k = mnp.k_core
@@ -1284,33 +1303,50 @@ def extract_domain_csv(name, number=27, filepath='./MNP_Data', filename='domain_
                     axes = 'random_plane'
                 elif (i // 9) % 3 == 2:
                     axes = 'random_hexagonal'
-                data_list = [mnp.id, Bz, m, a, k, axes, csize, maxsize, fpf]
+                data_list = [mnp.id, Bz, m, a, k, axes, csize, maxsize, fpf, pf23]
                 write.writerow(data_list)
             except:
                 print('Failed - MNP {}'.format(i))
 
 
-def extract_average_domain_data(name, filename='sorted_data.csv', mode='w', start=0, end=36):
+def extract_average_domain_data(name, filename='sorted_data.csv', mode='w', start=0, end=36, start_steps = 0, end_steps=None):
     with open(filename, mode) as f:
         write = csv.writer(f)
-        write.writerow(["MNP", "B (T)", "Ms (A/m)", "K (J/m^3)", "A (J/m)", "Avg. FPF", "\u03C3 FPF", "Avg. C-Size",
-                        "\u03C3 C-Size", "Avg. Max Size", "\u03C3 Max Size"])
-        for i in range(start, end):
-            mnp = load_mnp(i, name=name)
-            m = mnp.ms_core
-            a = mnp.a_core
-            k = mnp.k_core
-            data = pd.read_csv(os.path.join(mnp.filepath, 'axes_range_data.csv'))
-            fpf_mean_data = np.mean(data["Free Particle Fraction"])
-            fpf_st_dv_data = np.std(data['Free Particle Fraction'])
-            c_size_mean_data = np.mean(data["Characteristic Domain Size"])
-            c_size_st_dv_data = np.std(data['Characteristic Domain Size'])
-            max_size_mean_data = np.mean(data["Max Domain Size"])
-            max_size_st_dv_data = np.std(data['Max Domain Size'])
-            drivepath = os.path.join(mnp.filepath, 'drives')
-            with open(os.path.join(drivepath, 'drive_1_info.json'), 'r') as openfile:
-                json_object = json.load(openfile)
-                Bz = json_object.get('Bz')
-            data_list = [i, Bz, m, k, a, fpf_mean_data, fpf_st_dv_data, c_size_mean_data, c_size_st_dv_data,
-                         max_size_mean_data, max_size_st_dv_data]
-            write.writerow(data_list)
+        write.writerow(["MNP", "B (T)", "Ms (A/m)", "K (J/szam^3)", "A (J/m)", "Avg. FPF", "\u03C3 FPF", "Avg. C-Size",
+                        "\u03C3 C-Size", "Avg. Max Size", "\u03C3 Max Size", "Avg. 2-3 PF", "\u03C3 2-3 PF"])
+        if end_steps is None:
+            stepnum=1
+        else:
+            stepnum=end_steps
+        for step in range(start_steps, stepnum):
+            for i in range(start, end):
+                try:
+                    mnp = load_mnp(i, name=name)
+                    m = mnp.ms_core
+                    a = mnp.a_core
+                    k = mnp.k_core
+                    if end_steps is None:
+                        data = pd.read_csv(os.path.join(mnp.filepath, 'axes_range_data.csv'))
+                    else:
+                        data = pd.read_csv(os.path.join(mnp.filepath, 'axes_range_data_{}.csv'.format(step)))
+                    fpf_mean_data = np.mean(data["Free Particle Fraction"])
+                    fpf_st_dv_data = np.std(data['Free Particle Fraction'])
+                    c_size_mean_data = np.mean(data["Characteristic Domain Size"])
+                    c_size_st_dv_data = np.std(data['Characteristic Domain Size'])
+                    max_size_mean_data = np.mean(data["Max Domain Size"])
+                    max_size_st_dv_data = np.std(data['Max Domain Size'])
+                    try:
+                        pf23_mean_data = np.mean(data["2-3 Particle Fraction"])
+                        pf23_st_dv_data = np.std(data['2-3 Particle Fraction'])
+                    except:
+                        pf23_mean_data = None
+                        pf23_st_dv_data = None
+                    drivepath = os.path.join(mnp.filepath, 'drives')
+                    with open(os.path.join(drivepath, 'drive_{}_info.json'.format(step + 1)), 'r') as openfile:
+                        json_object = json.load(openfile)
+                        Bz = json_object.get('Bz')
+                    data_list = [i, Bz, m, k, a, fpf_mean_data, fpf_st_dv_data, c_size_mean_data, c_size_st_dv_data,
+                                max_size_mean_data, max_size_st_dv_data, pf23_mean_data, pf23_st_dv_data]
+                    write.writerow(data_list)
+                except FileNotFoundError:
+                    print('Failed - MNP {}'.format(i))

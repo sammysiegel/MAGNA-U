@@ -1,5 +1,5 @@
 # Magnetic Nanoparticle Assembly Utilities (MAGNA-U)
-#### Version 2.6.1
+#### Version 2.7.0
 
 | Description| Badge|
 | --------|-------|
@@ -28,7 +28,7 @@ version using the `load_mnp()` function.
 
 ### Contents: 
 1. **Instructions**
-    - Setup and Dependencies
+    - Installation and Dependencies
     - Creating an MNP Assembly
     - Simulating an MNP Assembly
     - Saving, Loading, and Managing Data
@@ -38,52 +38,61 @@ version using the `load_mnp()` function.
 4. References
 
 ## Instructions
-### Setup and Dependencies
+### Installation and Dependencies
 
-There are two ways to install MAGNA-U:
-1. Place the python file in inside your current working directory (the folder you
-   are running the code from). You can find the code on Box at 
-   `/oommf/Sammy/ubermag/MAGNA-U/magna/utils.py`.
-   If the file is in the right place, you should be able to import it like so:
-    ```python
-    import utils as mu
-    ```
-2. To avoid having to transfer files between devices, you can download the MAGNA-U
-    package from Github at [https://github.com/sammysiegel/MAGNA-U](https://github.com/sammysiegel/MAGNA-U). This is easy
+It is recommended that you  download the MAGNA-U
+    package directly from Github at [https://github.com/sammysiegel/MAGNA-U](https://github.com/sammysiegel/MAGNA-U). This is easy
    to do on the command line. Just go to the directory you wish to download to and do:
-   ```bash
-   git init
-   git clone https://github.com/sammysiegel/MAGNA-U
-   ```
-   From there you can access the file. Additionally, it is pretty easy to install
-    the package with pip so you can make it available in your environment without
-   having to worry about whether it is in your directory or not. You just need to
-   find the right path. If you are using an Anaconda environment, that will look
-   something like `/[path_to_anaconda]/envs/[env_name]/lib/python3.8/site-packages`.
-   Once you have downloaded the MAGNA-U repository from Github, do the following:
-   ```bash
-   cd MAGNA-U
-   PYTHONUSERBASE=/[path_to_anaconda]/envs/[env_name]/lib/python3.8/site-packages pip install .
-   ```
    
-    If this doesn't work you can check what the correct path is by running in Python:
-    ```python
-    import sys
-    print(sys.path)
-    ```
-    This will give you a list of places which will work to put the package.
+```bash
+git init
+git clone https://github.com/sammysiegel/MAGNA-U
+```
+
+If you are running in an Anaconda environment, you can use the `install.py` script that
+comes with MAGNA-U to easily install to the right place. Simply run:
+
+```bash
+cd MAGNA-U
+python install.py
+```
+
+This will install MAGNA-U to a location like `/[path_to_anaconda]/envs/[env_name]/lib/python3.8/site-packages`.
+If you are not in an Anaconda environment, you can run a command like this:
+
+```bash
+cd MAGNA-U
+PYTHONUSERBASE=/path/to/install/location pip install .
+```
+
+You can check what the correct path is by running in Python:
+```python
+import sys
+print(sys.path)
+```
+
+This will give you a list of places which will work to put the package.
+
+You can test to see whether MAGNA-U is working by running in the MAGNA-U directory:
+
+```python
+python testthis.py
+```
    
-   Once it is installed you can import using:
-    ```python
-    import magna.utils as mu
-    ```
+Once it is installed you can import using:
+```python
+import magna.utils as mu
+```
 
 MAGNA-U requires an environment with Python 3.8. It also requires Ubermag to be
 installed in your environment. Specifically, the following packages currently
 must be available in your environment in order to work:
  - `ast, csv, random, time, os` from Python Standard Library
- - `numpy`
- - `discretisedfield` from Ubermag
+ - `numpy`, `pandas`, and `scipy`
+ - `discretisedfield`, `micromagneticmodel`, and `oommfc` from Ubermag
+ - `matplotlib` and `k3d` for plotting
+ - `opencv-python` (import as `cv2`) 
+ - `networkx` for constructing graphs
 
 ### Creating an MNP Assembly
 Generating an MNP assembly is done through the `MNP` class. `MNP` is also a
@@ -95,16 +104,16 @@ my_mnp = mu.MNP(id, **kwargs)
 ```
 The argument `id` is a required positional argument that should be an integer
 number by which the assembly you create will be referenced. 
-***NEW*** If you give the id argument a value of `-1` instead, an id number will be generated for you based on
+If you give the id argument a value of `-1` instead, an id number will be generated for you based on
 how many `mnp_*` directories are located in your `directory/name` directory, starting with
 0 if there are 0. Here are a list of keyword arguments which you can pass if
 you want to change their values from the default values:
- - ***New*** `name`: This can be any string you want. The name can be used to describe the
+ - `name`: This can be any string you want. The name can be used to describe the
    usage of the MNP, for example `'varying_a'`, but by default it will just be the
    date that the mnp is created.
    - *default value:* `time.strftime('%b_%d', time.localtime())` (The current date in
      the format like 'Apr-14')
- - ***NEW*** `directory`: A string with the directory in which data relating to the MNP
+ - `directory`: A string with the directory in which data relating to the MNP
    assembly will be stored. If you pass the name of a directory that does not
    already exist, the program will create it for you.
     - *default value*: `'./MNP_Data'`
@@ -112,13 +121,13 @@ you want to change their values from the default values:
    `(r_total, r_shell, r_core)`where r_total is the total radius between
    individual MNPs, r_shell is the radius of the shell, and r_core is the radius
    of the core, all in meters.
-    - *default value*: `(3.5e-9, 3.5e-9, 3e-9)`
+    - *default value*: `(4e-9, 3.5e-9, 3e-9)`
  -  `discretizations`: this takes a tuple of three values in the form (x, y, z), 
     where x, y, and z are the number of divisions per r_total that determines how
     small each cell is in your simulation for each respective axis. A larger number
     makes more divisions and smaller cells. For example, putting 7 for x would
     result in a total x discretization length of r_total/7.
-     - *default value:* `(7,7,7)`
+     - *default value:* `(4,4,4)`
  - `ms_tuple`: This function takes a tuple of two values in the form
    `(ms_shell, ms_core)`where ms_shell is the saturation magnetization of the
    shell, and ms_core is the saturation magnetization of the core, all in A/m.
@@ -205,7 +214,7 @@ to the `initialize()` method:
    - *default value:* `H = (0, 0, .1/mm.consts.mu0)` (0.1 T in the +Z direction)
     
 #### Driving a Custom System
-***NEW*** In order to drive a custom `MNP_System`, you can you the 'MNP_MinDriver' class:
+In order to drive a custom `MNP_System`, you can you the 'MNP_MinDriver' class:
 ```python
 import magna.utils as mu
 my_mnp = mu.MNP(0, name = 'my_name', directory = 'my_MNP_data')
@@ -342,7 +351,7 @@ M, A = my_mnp.load_fields(filepath = './my_other_directory', fields='ma')
 ```
 
 ### Plotting Data
-***NEW*** You can use the `MNP_Analyzer` class to generate plots to analyze the magnetization data
+You can use the `MNP_Analyzer` class to generate plots to analyze the magnetization data
 of an MNP. To start, generate an instance of the class using the MNP you wish to analyze.
 ```python
 import magna.utils as mu
@@ -387,6 +396,12 @@ colored by either the z component (default) or the xy angle component by using
 will likely take significantly longer than coloring using z.
    
 ### Changelog
+ - Version 2.7.0 (26 January 2022)
+    - New statistic: 2-3 Particle Fraction
+    - Can save multiple `axes_range_data` csv files with `save_averaged_data()` by if you iterate the `step` attribute of each `MNP_Domain_Analyzer`.
+    - You can extract multiple steps for an MNP with `extract_average_domain_data`
+    - Print statements to indicate the time taken to perform various tasks
+    - some bug fixes
 - Version 2.6.1 (10 November 2021)
     - fixed bug with `save_averaged_data`
     - `extract_average_domain_data` can specify the start mnp and the end mnp
