@@ -1,5 +1,5 @@
 # Magnetic Nanoparticle Assembly Utilities (MAGNA-U)
-#### Version 2.7.0
+#### Version 2.7.1
 
 | Description| Badge|
 | --------|-------|
@@ -396,6 +396,9 @@ colored by either the z component (default) or the xy angle component by using
 will likely take significantly longer than coloring using z.
    
 ### Changelog
+- Version 2.7.1 (7 February 2022)
+    - When saving data with `save_averaged_data`, `extract_domain_csv`, or `extract_average_domain_data`, the list of region/domain sizes are now saved in the csv files
+    - When saving data with `extract_domain_csv`, or `extract_average_domain_data`, the applied X and Y magnetic fields (`Bx`, and `By`) are now saved in addition to the Z field (`Bz`)
  - Version 2.7.0 (26 January 2022)
     - New statistic: 2-3 Particle Fraction
     - Can save multiple `axes_range_data` csv files with `save_averaged_data()` by if you iterate the `step` attribute of each `MNP_Domain_Analyzer`.

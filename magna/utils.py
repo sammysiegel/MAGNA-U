@@ -1255,14 +1255,14 @@ class MNP_Domain_Analyzer(MNP_Analyzer):
         with open(os.path.join(self.mnp.filepath, 'axes_range_data_{}.csv'.format(self.step)), 'w') as f:
             write = csv.writer(f)
             write.writerow(
-                ["d_theta", "d_phi", "Characteristic Domain Size", "Max Domain Size", "Free Particle Fraction", "2-3 Particle Fraction"])
+                ["d_theta", "d_phi", "Characteristic Domain Size", "Max Domain Size", "Free Particle Fraction", "2-3 Particle Fraction", "Region List"])
             for d_theta in [i * 5 for i in range(0, 36)]:
                 for d_phi in [j * 15 for j in range(0, 24)]:
                     self.d_theta = d_theta
                     self.d_phi = d_phi
                     self.find_regions()
                     data = [self.d_theta, self.d_phi, self.characteristic_size, max(self.region_list),
-                            self.free_particle_fraction, self.two_three_particle_fraction]
+                            self.free_particle_fraction, self.two_three_particle_fraction, self.region_list]
                     write.writerow(data)
         print("Averaged domain data saved in {} s".format(time.time()-t0))
 
@@ -1271,8 +1271,8 @@ def extract_domain_csv(name, number=27, filepath='./MNP_Data', filename='domain_
     with open(filename, mode) as f:
         write = csv.writer(f)
         write.writerow(
-            ['MNP Id', 'B (T)', 'Ms_core (A/m)', 'A_core (J/m)', 'K_core (J/m^3)', 'Axes type', 'Characteristic Size',
-             'Max Size', 'Free Particle Fraction', '2-3 Particle Fraction'])
+            ['MNP Id', 'Bx (T)', 'By (T)', 'Bz (T)', 'Ms_core (A/m)', 'A_core (J/m)', 'K_core (J/m^3)', 'Axes type', 'Characteristic Size',
+             'Max Size', 'Free Particle Fraction', '2-3 Particle Fraction', 'Region List'])
         for i in range(number):
             try:
                 mnp = load_mnp(i, name=name, filepath=filepath)
@@ -1286,6 +1286,7 @@ def extract_domain_csv(name, number=27, filepath='./MNP_Data', filename='domain_
                 maxsize = domain_data[4]
                 fpf = domain_data[7]
                 pf23 = domain_data[8]
+                region_list = domain_data[6]
                 m = mnp.ms_core
                 a = mnp.a_core
                 k = mnp.k_core
@@ -1293,6 +1294,8 @@ def extract_domain_csv(name, number=27, filepath='./MNP_Data', filename='domain_
                     drivepath = os.path.join(mnp.filepath, 'drives')
                     with open(os.path.join(drivepath, 'drive_1_info.json'), 'r') as openfile:
                         json_object = json.load(openfile)
+                        Bx = json_object.get('Bx')
+                        By = json_object.get('By')
                         Bz = json_object.get('Bz')
                 except:
                     print('No .json drive file found... Setting B =', B)
@@ -1303,7 +1306,7 @@ def extract_domain_csv(name, number=27, filepath='./MNP_Data', filename='domain_
                     axes = 'random_plane'
                 elif (i // 9) % 3 == 2:
                     axes = 'random_hexagonal'
-                data_list = [mnp.id, Bz, m, a, k, axes, csize, maxsize, fpf, pf23]
+                data_list = [mnp.id, Bx, By, Bz, m, a, k, axes, csize, maxsize, fpf, pf23, region_list]
                 write.writerow(data_list)
             except:
                 print('Failed - MNP {}'.format(i))
@@ -1312,8 +1315,8 @@ def extract_domain_csv(name, number=27, filepath='./MNP_Data', filename='domain_
 def extract_average_domain_data(name, filename='sorted_data.csv', mode='w', start=0, end=36, start_steps = 0, end_steps=None):
     with open(filename, mode) as f:
         write = csv.writer(f)
-        write.writerow(["MNP", "B (T)", "Ms (A/m)", "K (J/szam^3)", "A (J/m)", "Avg. FPF", "\u03C3 FPF", "Avg. C-Size",
-                        "\u03C3 C-Size", "Avg. Max Size", "\u03C3 Max Size", "Avg. 2-3 PF", "\u03C3 2-3 PF"])
+        write.writerow(["MNP", "Bx (T)", "By (T)", "Bz (T)", "Ms (A/m)", "K (J/szam^3)", "A (J/m)", "Avg. FPF", "\u03C3 FPF", "Avg. C-Size",
+                        "\u03C3 C-Size", "Avg. Max Size", "\u03C3 Max Size", "Avg. 2-3 PF", "\u03C3 2-3 PF", "Full Region List"])
         if end_steps is None:
             stepnum=1
         else:
@@ -1329,6 +1332,10 @@ def extract_average_domain_data(name, filename='sorted_data.csv', mode='w', star
                         data = pd.read_csv(os.path.join(mnp.filepath, 'axes_range_data.csv'))
                     else:
                         data = pd.read_csv(os.path.join(mnp.filepath, 'axes_range_data_{}.csv'.format(step)))
+                    temp = []
+                    for j in range(len(data["Region List"])):
+                        temp.append(json.loads(data["Region List"][j]))
+                    full_region_list = list(np.concatenate(temp))
                     fpf_mean_data = np.mean(data["Free Particle Fraction"])
                     fpf_st_dv_data = np.std(data['Free Particle Fraction'])
                     c_size_mean_data = np.mean(data["Characteristic Domain Size"])
@@ -1344,9 +1351,11 @@ def extract_average_domain_data(name, filename='sorted_data.csv', mode='w', star
                     drivepath = os.path.join(mnp.filepath, 'drives')
                     with open(os.path.join(drivepath, 'drive_{}_info.json'.format(step + 1)), 'r') as openfile:
                         json_object = json.load(openfile)
+                        Bx = json_object.get('Bx')
+                        By = json_object.get('By')
                         Bz = json_object.get('Bz')
-                    data_list = [i, Bz, m, k, a, fpf_mean_data, fpf_st_dv_data, c_size_mean_data, c_size_st_dv_data,
-                                max_size_mean_data, max_size_st_dv_data, pf23_mean_data, pf23_st_dv_data]
+                    data_list = [i, Bx, By, Bz, m, k, a, fpf_mean_data, fpf_st_dv_data, c_size_mean_data, c_size_st_dv_data,
+                                max_size_mean_data, max_size_st_dv_data, pf23_mean_data, pf23_st_dv_data, full_region_list]
                     write.writerow(data_list)
                 except FileNotFoundError:
                     print('Failed - MNP {}'.format(i))
