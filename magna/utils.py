@@ -709,6 +709,11 @@ class MNP_Analyzer:
                 self.field = self.mnp.load_any_field('m_final_{}'.format(step),
                                                      filepath=os.path.join(self.mnp.filepath, 'drives'))
 
+    def load_step(self, step):
+        self.step = step
+        self.field = self.mnp.load_any_field('m_final_{}'.format(step),
+                                             filepath=os.path.join(self.mnp.filepath, 'drives'))
+
     def xy_plot(self, ax=None, title=None, z_plane=0, figsize=(50, 50), filename=None, filetype=None,
                 scalar_cmap='hsv', vector_cmap='binary', scalar_clim=(0, 6.28), **kwargs):
         if filetype is None:  # filetype defautls to .png
@@ -1256,10 +1261,15 @@ class MNP_Domain_Analyzer(MNP_Analyzer):
             write = csv.writer(f)
             write.writerow(
                 ["d_theta", "d_phi", "Characteristic Domain Size", "Max Domain Size", "Free Particle Fraction", "2-3 Particle Fraction", "Region List"])
-            for d_theta in [i * 5 for i in range(0, 36)]:
-                for d_phi in [j * 15 for j in range(0, 24)]:
-                    self.d_theta = d_theta
-                    self.d_phi = d_phi
+            angle_pairs = [(0, 0), (0,180), 
+                          (30,0), (30, 90), (30, 180), (30, 270), 
+                          (60, 0), (60, 60), (60, 120), (60, 180), (60, 240), (60, 300),
+                          (90, 0), (90, 60), (90, 120), (90, 180), (90, 240), (90, 300),
+                          (120,0), (120, 90), (120, 180), (120, 270),
+                          (150, 0), (150,180)]
+           
+            for pair in angle_pairs:
+                    self.d_theta, self.d_phi = pair
                     self.find_regions()
                     data = [self.d_theta, self.d_phi, self.characteristic_size, max(self.region_list),
                             self.free_particle_fraction, self.two_three_particle_fraction, self.region_list]
