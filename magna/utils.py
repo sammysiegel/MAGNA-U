@@ -236,7 +236,7 @@ class Lattice:
 
 class MNP(Lattice):
     def __init__(self, id,
-                 r_tuple=(4e-9, 3.5e-9, 3e-9),
+                 r_tuple=(4.25e-9, 3.7e-9, 3.2e-9),
                  discretizations=(4, 4, 4),
                  ms_tuple=(2.4e5, 3.9e5),
                  a_tuple=(5e-12, 9e-12),
@@ -327,9 +327,23 @@ class MNP(Lattice):
         elif self.axes_type == 'all_random':
             axes_list = [(2 * np.random.random() - 1, 2 * np.random.random() - 1, 2 * np.random.random() - 1) for _ in
                          range(len(self.coord_list))]
+        elif self.axes_type == 'random_nn':
+            G = nx.Graph()
+            for i in range(len(self.coord_list)):
+                G.add_node(i)
+            for i in range(len(self.coord_list)):
+                for j in range(len(self.coord_list)):
+                    r = self.coord_list[i] - self.coord_list[j]
+                    if 0 < (r[0] ** 2 + r[1] ** 2 + r[2] ** 2) < 1.0001:
+                        G.add_edge(i, j)
+
+            axes_list = []
+            for i in range(len(self.coord_list)):
+                axes_list.append(tuple(mnp.coord_list[i] - mnp.coord_list[list(G.adj[i])[random.randint(0, len(G.adj[i])-1)]]))
+
         else:
             raise AttributeError(
-                "axes_type parameter must be one of 'random_hexagonal', 'random_plane', or 'all_random'.")
+                "axes_type parameter must be one of 'random_hexagonal', 'random_plane', 'all_random', or 'random_nn'.")
         return axes_list
 
     def find_distances(self):
