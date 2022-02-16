@@ -339,7 +339,7 @@ class MNP(Lattice):
 
             axes_list = []
             for i in range(len(self.coord_list)):
-                axes_list.append(tuple(mnp.coord_list[i] - mnp.coord_list[list(G.adj[i])[random.randint(0, len(G.adj[i])-1)]]))
+                axes_list.append(tuple(self.coord_list[i] - self.coord_list[list(G.adj[i])[random.randint(0, len(G.adj[i])-1)]]))
 
         else:
             raise AttributeError(
