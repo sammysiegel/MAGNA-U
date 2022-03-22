@@ -1,5 +1,5 @@
 # Magnetic Nanoparticle Assembly Utilities (MAGNA-U)
-#### Version 2.7.1
+#### Version 2.8.0
 
 | Description| Badge|
 | --------|-------|
@@ -396,6 +396,11 @@ colored by either the z component (default) or the xy angle component by using
 will likely take significantly longer than coloring using z.
    
 ### Changelog
+ - Version 2.8.0 (21 March 2022)
+    - Changed 864 axes choices to 24 for `save_averaged_data()`
+    - Added `'random_nn'` (one of 12 nearest neighbors) as option for easy axes
+    - Allows pre-generated csv files for mesh points to be used to more efficiently generate MAKU fields
+    - Pre-written code for pre-generating csvs in the `MAGNA-U/mesh-making` folder
 - Version 2.7.1 (7 February 2022)
     - When saving data with `save_averaged_data`, `extract_domain_csv`, or `extract_average_domain_data`, the list of region/domain sizes are now saved in the csv files
     - When saving data with `extract_domain_csv`, or `extract_average_domain_data`, the applied X and Y magnetic fields (`Bx`, and `By`) are now saved in addition to the Z field (`Bz`)

@@ -19,6 +19,7 @@ nav:
       - MNP Hysteresis Analyzer: MNP_Hysteresis_Analyzer.md
       - MNP Domain Analyzer: MNP_Domain_Analyzer.md
     - Lattice: Lattice.md
+    - Pre-generating Mesh CSVs: csv_pregen.md
 
 theme:
   name: null

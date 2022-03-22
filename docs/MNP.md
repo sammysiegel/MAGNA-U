@@ -19,6 +19,7 @@ magna.utils.MNP(id,
                  axes=None,
                  axes_type='random_hexagonal',
                  directory=os.path.join(os.getcwd(), 'MNP_Data'),
+                 mesh_csv=None,
                  loaded_fields='')
 ```
                  
@@ -86,6 +87,10 @@ The following attributes are given to an MNP when it is first initialized:
    as any 3vector, `'random_plane'` for easy axes in the xy plane, or
    `'random_hexagonal'` for easy axes in the xy plane in one of six hexagonal directions 120° apart.
     - *default value:* `'random_hexagonal'`
+- `mesh_csv`: a string containing the location of a [pre-generated csv file](csv_pregen.md) with each point in the mesh 
+  and whether it is in a core/shell or not. If a file is given, it will be used to generate MAKU fields 
+  much faster than from scratch. If `None` is given, MAKU fields are generated in the standard, time-consuming way.
+    - *default value:* `None`
 - `loaded_fields`: A string containing any of m, a, k, and u corresponding to the "maku" fields to
   be preloaded from a file. Used by the `load_mnp` function but can be ignored otherwise.
     - *default value:* `''`

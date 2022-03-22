@@ -250,12 +250,14 @@ class MNP(Lattice):
                  axes=None,
                  axes_type='random_hexagonal',
                  directory=os.path.join(os.getcwd(), 'MNP_Data'),
+                 mesh_csv=None,
                  loaded_fields=''):
         super().__init__(name=name, form=form, shape=shape, n_layers=n_layers, layer_radius=layer_radius,
                          layer_dims=layer_dims)
 
         self.axes_type = axes_type
         self.coord_list = self.list_coords()
+        self.mesh_csv = mesh_csv
 
         self.dirpath = os.path.join(directory, name)
         if not os.path.isdir(self.dirpath):
@@ -362,12 +364,35 @@ class MNP(Lattice):
         else:
             return False
 
+    def if_coreshell(self, point):
+        x, y, z = point
+        for n in self.coord_list:
+            i, j, k = n
+            dist = ((x - 2 * i * self.r_total) ** 2 + (y - 2 * j * self.r_total) ** 2 + (z - 2 * k * self.r_total) ** 2)** .5
+            if dist <= self.r_core:
+                return 2
+            elif dist <= self.r_shell:
+                return 1
+        else:
+            return 0
+
     def ms_func(self, point):
         if self.if_circle(point, self.r_shell) and self.if_circle(point, self.r_core):
             return self.ms_core  # Fe3O4 Exchange stiffness constant (J/m)
         elif self.if_circle(point, self.r_shell) and not self.if_circle(point, self.r_core):
             return self.ms_shell  # MnFe2O4 Exchange stiffness constant (J/m)
         else:
+            return 0
+
+    def alt_ms_func(self, point):
+        if int(self.arrayz[self.n][3]) == 2:
+            self.n +=1
+            return self.ms_core
+        elif int(self.arrayz[self.n][3]) == 1:
+            self.n+=1
+            return self.ms_shell
+        else: 
+            self.n+=1
             return 0
 
     def a_func(self, point):
@@ -378,12 +403,35 @@ class MNP(Lattice):
         else:
             return 0
 
+    def alt_a_func(self, point):
+        if int(self.arrayz[self.n][3]) == 2:
+            self.n +=1
+            return self.a_core
+        elif int(self.arrayz[self.n][3]) == 1:
+            self.n+=1
+            return self.a_shell
+        else: 
+            self.n+=1
+            return 0
+
+
     def k_func(self, point):
         if self.if_circle(point, self.r_shell) and self.if_circle(point, self.r_core):
             return self.k_core  # Fe3O4 Exchange stiffness constant (J/m)
         elif self.if_circle(point, self.r_shell) and not self.if_circle(point, self.r_core):
             return self.k_shell  # MnFe2O4 Exchange stiffness constant (J/m)
         else:
+            return 0
+
+    def alt_k_func(self, point):
+        if int(self.arrayz[self.n][3]) == 2:
+            self.n +=1
+            return self.k_core
+        elif int(self.arrayz[self.n][3]) == 1:
+            self.n+=1
+            return self.k_shell
+        else: 
+            self.n+=1
             return 0
 
     def circle_index(self, point, n_list):
@@ -399,6 +447,14 @@ class MNP(Lattice):
         if not self.if_circle(point, self.r_shell):
             return (0, 0, 1)
         else:
+            return self.easy_axes[self.circle_index(point, self.coord_list)]
+
+    def alt_u_func(self, point):
+        if int(self.arrayz[self.n][3]) == 0:
+            self.n += 1
+            return (0, 0, 1)
+        else:
+            self.n += 1
             return self.easy_axes[self.circle_index(point, self.coord_list)]
 
     @property
@@ -428,9 +484,30 @@ class MNP(Lattice):
                                     norm=self.ms_func)
         print('M Field made in {} s'.format(time.time()-t0))
 
+    def alt_make_m_field(self, m0='random'):
+        self.n = 0
+        self.arrayz = np.genfromtxt(self.mesh_csv, delimiter=',')
+        t0 = time.time()
+        if m0 == 'random':
+            self.m_field = df.Field(self.mesh, dim=3,
+                                    value=lambda point: [2 * random.random() - 1 for _ in range(3)],
+                                    norm=self.alt_ms_func)
+        elif type(m0) == type((0, 0, 0)):
+            self.m_field = df.Field(self.mesh, dim=3,
+                                    value=m0,
+                                    norm=self.alt_ms_func)
+        print('M Field made in {} s'.format(time.time()-t0))
+
     def make_a_field(self):
         t0 = time.time()
         self.a_field = df.Field(self.mesh, dim=1, value=self.a_func)
+        print('A Field made in {} s'.format(time.time()-t0))
+
+    def alt_make_a_field(self):
+        t0 = time.time()
+        self.n = 0
+        self.arrayz = np.genfromtxt(self.mesh_csv, delimiter=',')
+        self.a_field = df.Field(self.mesh, dim=1, value=self.alt_a_func)
         print('A Field made in {} s'.format(time.time()-t0))
 
     def make_k_field(self):
@@ -438,20 +515,44 @@ class MNP(Lattice):
         self.k_field = df.Field(self.mesh, dim=1, value=self.k_func)
         print('K Field made in {} s'.format(time.time()-t0))
 
+    def alt_make_k_field(self):
+        t0 = time.time()
+        self.n = 0
+        self.arrayz = np.genfromtxt(self.mesh_csv, delimiter=',')
+        self.k_field = df.Field(self.mesh, dim=1, value=self.alt_k_func)
+        print('K Field made in {} s'.format(time.time()-t0))
+
     def make_u_field(self):
         t0 = time.time()
         self.u_field = df.Field(self.mesh, dim=3, value=self.u_func)
         print('U Field made in {} s'.format(time.time()-t0))
 
+    def alt_make_u_field(self):
+        t0 = time.time()
+        self.n = 0
+        self.arrayz = np.genfromtxt(self.mesh_csv, delimiter=',')        
+        self.u_field = df.Field(self.mesh, dim=3, value=self.alt_u_func)
+        print('U Field made in {} s'.format(time.time()-t0))
+
     def initialize(self, fields='maku', autosave=True, m0='random'):
-        if 'm' in fields:
-            self.make_m_field(m0=m0)
-        if 'a' in fields:
-            self.make_a_field()
-        if 'k' in fields:
-            self.make_k_field()
-        if 'u' in fields:
-            self.make_u_field()
+        if self.coords_csv is None:
+            if 'm' in fields:
+                self.make_m_field(m0=m0)
+            if 'a' in fields:
+                self.make_a_field()
+            if 'k' in fields:
+                self.make_k_field()
+            if 'u' in fields:
+                self.make_u_field()
+        else:
+            if 'm' in fields:
+                self.alt_make_m_field(m0=m0)
+            if 'a' in fields:
+                self.alt_make_a_field()
+            if 'k' in fields:
+                self.alt_make_k_field()
+            if 'u' in fields:
+                self.alt_make_u_field()            
         self.initialized = True
         if autosave:
             save_mnp(self)
