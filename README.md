@@ -1,5 +1,5 @@
 # Magnetic Nanoparticle Assembly Utilities (MAGNA-U)
-#### Version 2.8.0
+#### Version 2.8.1
 
 | Description| Badge|
 | --------|-------|
@@ -396,6 +396,8 @@ colored by either the z component (default) or the xy angle component by using
 will likely take significantly longer than coloring using z.
    
 ### Changelog
+ - Version 2.8.1 (6 April 2022)
+    - bug fixes
  - Version 2.8.0 (21 March 2022)
     - Changed 864 axes choices to 24 for `save_averaged_data()`
     - Added `'random_nn'` (one of 12 nearest neighbors) as option for easy axes

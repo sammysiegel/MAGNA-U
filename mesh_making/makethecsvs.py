@@ -6,7 +6,7 @@ run = int(sys.argv[1])
 
 batches = int(sys.argv[2])
 
-mnp = mu.MNP(0,
+mnp = mu.MNP(run,
              r_tuple=(5.0e-9, 3.8e-9, 3.8e-9),
              discretizations = (4, 4, 4), 
              form = 'fcc',

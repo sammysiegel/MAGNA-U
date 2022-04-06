@@ -535,7 +535,7 @@ class MNP(Lattice):
         print('U Field made in {} s'.format(time.time()-t0))
 
     def initialize(self, fields='maku', autosave=True, m0='random'):
-        if self.coords_csv is None:
+        if self.mesh_csv is None:
             if 'm' in fields:
                 self.make_m_field(m0=m0)
             if 'a' in fields:

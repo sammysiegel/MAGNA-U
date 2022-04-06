@@ -51,6 +51,8 @@ version using the `load_mnp()` function.
 |[`quick_drive`](Quick_Drive.md)| Easy way to drive an MNP assembly|
 
 ## Changelog
+ - Version 2.8.1 (6 April 2022)
+    - bug fixes
  - Version 2.8.0 (21 March 2022)
     - Changed 864 axes choices to 24 for `save_averaged_data()`
     - Added `'random_nn'` (one of 12 nearest neighbors) as option for easy axes
