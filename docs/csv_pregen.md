@@ -34,7 +34,7 @@ In the `MAGNA-U/mesh_making` folder, each job should produce a csv once it has f
 ### Step 4 - Combine the csvs to produce the final file
 Once all jobs have finished, run the following command in the `MAGNA-U/mesh_making` folder:
 ```bash
-python python genmesh2.py {N} {filename to save to}
+python genmesh2.py {N} {filename to save to}
 ```
 The first argument is the number of jobs that were run, and the second argument is the filename that you wish to save the complete mesh csv file to.
 
