@@ -8,7 +8,7 @@ batches = int(sys.argv[2])
 
 mnp = mu.MNP(run,
              r_tuple=(5.0e-9, 3.8e-9, 3.8e-9),
-             discretizations = (4, 4, 4), 
+             discretizations = (7, 7, 7), 
              form = 'fcc',
              layer_radius = 7, 
              n_layers = 11)

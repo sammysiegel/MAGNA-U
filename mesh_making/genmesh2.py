@@ -15,7 +15,7 @@ for i in range(batches):
     arr = np.genfromtxt('{}.csv'.format(i), delimiter=',')
     full_array = np.concatenate((full_array, arr))
 
-np.delete(full_array, 0, 0)
+full_array = np.delete(full_array, 0, 0)
 
 np.savetxt(filename, full_array, delimiter=',')
 

@@ -51,6 +51,8 @@ version using the `load_mnp()` function.
 |[`quick_drive`](Quick_Drive.md)| Easy way to drive an MNP assembly|
 
 ## Changelog
+ - Version 2.8.2 (12 April 2022)
+    - `genmesh2.py` now removes the first line of zeros in array before saving it
  - Version 2.8.1 (6 April 2022)
     - bug fixes
  - Version 2.8.0 (21 March 2022)

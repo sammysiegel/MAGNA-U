@@ -1,5 +1,5 @@
 # Magnetic Nanoparticle Assembly Utilities (MAGNA-U)
-#### Version 2.8.1
+#### Version 2.8.2
 
 | Description| Badge|
 | --------|-------|
@@ -396,6 +396,8 @@ colored by either the z component (default) or the xy angle component by using
 will likely take significantly longer than coloring using z.
    
 ### Changelog
+ - Version 2.8.2 (12 April 2022)
+    - `genmesh2.py` now removes the first line of zeros in array before saving it
  - Version 2.8.1 (6 April 2022)
     - bug fixes
  - Version 2.8.0 (21 March 2022)
